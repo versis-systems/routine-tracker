@@ -4,7 +4,6 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
-import Button from '@/components/ui/Button'
 import { Mail, Lock } from 'lucide-react'
 
 export default function LoginPage() {
@@ -21,9 +20,7 @@ export default function LoginPage() {
     e.preventDefault()
     setLoading(true)
     setError(null)
-
     const { error } = await supabase.auth.signInWithPassword({ email, password })
-
     if (error) {
       setError(error.message)
       setLoading(false)
@@ -34,103 +31,121 @@ export default function LoginPage() {
   }
 
   const handleMagicLink = async () => {
-    if (!email) {
-      setError('Vul je e-mailadres in')
-      return
-    }
+    if (!email) { setError('Vul je e-mailadres in'); return }
     setLoading(true)
     setError(null)
-
     const { error } = await supabase.auth.signInWithOtp({
       email,
-      options: {
-        emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/today`,
-      },
+      options: { emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/today` },
     })
-
-    if (error) {
-      setError(error.message)
-    } else {
-      setMagicLinkSent(true)
-    }
+    if (error) { setError(error.message) } else { setMagicLinkSent(true) }
     setLoading(false)
   }
 
   return (
-    <div className="min-h-dvh bg-background flex flex-col items-center justify-center p-6">
+    <div
+      className="min-h-dvh flex flex-col items-center justify-center p-6"
+      style={{ backgroundColor: 'var(--color-background)' }}
+    >
       <div className="w-full max-w-sm">
-        <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <span className="text-3xl">✨</span>
+        {/* Icon */}
+        <div className="text-center mb-10">
+          <div
+            className="w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-5"
+            style={{ backgroundColor: 'var(--color-fill)' }}
+          >
+            <span className="text-4xl">✨</span>
           </div>
-          <h1 className="text-2xl font-bold text-text">Welkom terug</h1>
-          <p className="text-text-muted text-sm mt-1">Log in op je routine tracker</p>
+          <h1 className="text-[28px] font-bold" style={{ color: 'var(--color-text)' }}>Welkom terug</h1>
+          <p className="text-[15px] mt-1" style={{ color: 'var(--color-text-muted)' }}>Log in op je routine tracker</p>
         </div>
 
         {magicLinkSent ? (
-          <div className="bg-success/10 border border-success/30 rounded-2xl p-5 text-center">
-            <p className="text-success font-medium mb-1">Check je inbox!</p>
-            <p className="text-sm text-text-muted">
-              We hebben een inloglink gestuurd naar <strong className="text-text">{email}</strong>
+          <div
+            className="rounded-2xl p-5 text-center"
+            style={{ backgroundColor: 'rgba(52, 199, 89, 0.1)' }}
+          >
+            <p className="text-[17px] font-semibold mb-1" style={{ color: 'var(--color-success)' }}>Check je inbox!</p>
+            <p className="text-[15px]" style={{ color: 'var(--color-text-muted)' }}>
+              We hebben een inloglink gestuurd naar{' '}
+              <strong style={{ color: 'var(--color-text)' }}>{email}</strong>
             </p>
           </div>
         ) : (
-          <form onSubmit={handleLogin} className="space-y-4">
+          <form onSubmit={handleLogin} className="space-y-3">
             {error && (
-              <div className="bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-3 text-sm text-red-400">
+              <div
+                className="rounded-xl px-4 py-3 text-[14px]"
+                style={{ backgroundColor: 'rgba(255,59,48,0.08)', color: 'var(--color-danger)' }}
+              >
                 {error}
               </div>
             )}
 
             <div className="relative">
-              <Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted" />
+              <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2" style={{ color: 'var(--color-text-muted)' }} />
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 placeholder="E-mailadres"
-                className="w-full bg-surface border border-border rounded-xl pl-10 pr-4 py-3 text-text placeholder:text-text-muted focus:outline-none focus:border-primary transition-colors"
+                className="w-full rounded-xl pl-11 pr-4 py-3.5 text-[15px] focus:outline-none"
+                style={{
+                  backgroundColor: 'var(--color-surface)',
+                  color: 'var(--color-text)',
+                  border: '1px solid var(--color-border)',
+                }}
               />
             </div>
 
             <div className="relative">
-              <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted" />
+              <Lock size={16} className="absolute left-4 top-1/2 -translate-y-1/2" style={{ color: 'var(--color-text-muted)' }} />
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 placeholder="Wachtwoord"
-                className="w-full bg-surface border border-border rounded-xl pl-10 pr-4 py-3 text-text placeholder:text-text-muted focus:outline-none focus:border-primary transition-colors"
+                className="w-full rounded-xl pl-11 pr-4 py-3.5 text-[15px] focus:outline-none"
+                style={{
+                  backgroundColor: 'var(--color-surface)',
+                  color: 'var(--color-text)',
+                  border: '1px solid var(--color-border)',
+                }}
               />
             </div>
 
-            <Button type="submit" loading={loading} fullWidth size="lg">
-              Inloggen
-            </Button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-4 rounded-2xl text-[17px] font-semibold text-white transition-all active:scale-98 disabled:opacity-50 focus:outline-none mt-1"
+              style={{ backgroundColor: 'var(--color-primary)' }}
+            >
+              {loading ? 'Bezig…' : 'Inloggen'}
+            </button>
 
-            <div className="relative flex items-center">
-              <div className="flex-1 border-t border-border" />
-              <span className="px-3 text-xs text-text-muted">of</span>
-              <div className="flex-1 border-t border-border" />
+            <div className="flex items-center gap-3 my-1">
+              <div className="flex-1" style={{ height: '0.5px', backgroundColor: 'var(--color-separator)' }} />
+              <span className="text-[13px]" style={{ color: 'var(--color-text-muted)' }}>of</span>
+              <div className="flex-1" style={{ height: '0.5px', backgroundColor: 'var(--color-separator)' }} />
             </div>
 
-            <Button
+            <button
               type="button"
-              variant="secondary"
               onClick={handleMagicLink}
-              loading={loading}
-              fullWidth
+              disabled={loading}
+              className="w-full py-4 rounded-2xl text-[17px] font-semibold transition-all active:scale-98 disabled:opacity-50 focus:outline-none"
+              style={{ backgroundColor: 'var(--color-fill)', color: 'var(--color-primary)' }}
             >
               Inloggen met e-maillink
-            </Button>
+            </button>
           </form>
         )}
 
-        <p className="text-center text-sm text-text-muted mt-6">
+        <p className="text-center text-[15px] mt-6" style={{ color: 'var(--color-text-muted)' }}>
           Nog geen account?{' '}
-          <Link href="/signup" className="text-primary font-medium hover:underline">
+          <Link href="/signup" className="font-semibold" style={{ color: 'var(--color-primary)' }}>
             Aanmelden
           </Link>
         </p>

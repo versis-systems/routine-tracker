@@ -2,30 +2,41 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Dark theme (default) */
+/* Apple iOS light theme (default) */
 :root,
-[data-theme="dark"] {
-  --color-background: #0a0a0a;
-  --color-surface: #141414;
-  --color-surface-elevated: #1e1e1e;
-  --color-border: #2a2a2a;
-  --color-primary: #6366f1;
-  --color-primary-light: #818cf8;
-  --color-text: #f0f0f0;
-  --color-text-muted: #888888;
-  --color-success: #22c55e;
+[data-theme="light"] {
+  --color-background: #F2F2F7;
+  --color-surface: #FFFFFF;
+  --color-surface-elevated: #F2F2F7;
+  --color-surface-grouped: #EFEFF4;
+  --color-border: rgba(60, 60, 67, 0.18);
+  --color-separator: rgba(60, 60, 67, 0.29);
+  --color-primary: #007AFF;
+  --color-primary-light: #409CFF;
+  --color-text: #000000;
+  --color-text-muted: rgba(60, 60, 67, 0.6);
+  --color-success: #34C759;
+  --color-danger: #FF3B30;
+  --color-fill: rgba(120, 120, 128, 0.12);
+  --color-fill-secondary: rgba(120, 120, 128, 0.08);
 }
 
-[data-theme="light"] {
-  --color-background: #f8f8f8;
-  --color-surface: #ffffff;
-  --color-surface-elevated: #f0f0f0;
-  --color-border: #e0e0e0;
-  --color-primary: #6366f1;
-  --color-primary-light: #818cf8;
-  --color-text: #111111;
-  --color-text-muted: #666666;
-  --color-success: #16a34a;
+/* Apple iOS dark theme */
+[data-theme="dark"] {
+  --color-background: #000000;
+  --color-surface: #1C1C1E;
+  --color-surface-elevated: #2C2C2E;
+  --color-surface-grouped: #1C1C1E;
+  --color-border: rgba(84, 84, 88, 0.65);
+  --color-separator: rgba(84, 84, 88, 0.65);
+  --color-primary: #0A84FF;
+  --color-primary-light: #409CFF;
+  --color-text: #FFFFFF;
+  --color-text-muted: rgba(235, 235, 245, 0.6);
+  --color-success: #30D158;
+  --color-danger: #FF453A;
+  --color-fill: rgba(120, 120, 128, 0.2);
+  --color-fill-secondary: rgba(120, 120, 128, 0.16);
 }
 
 * {
@@ -40,8 +51,9 @@ body {
   min-height: 100dvh;
   background-color: var(--color-background);
   color: var(--color-text);
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   overscroll-behavior: none;
 }
 
@@ -50,27 +62,38 @@ body {
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
-/* Scrollbar styling */
+.pt-safe {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+/* Hide scrollbar but allow scrolling */
 ::-webkit-scrollbar {
-  width: 4px;
+  display: none;
 }
 
-::-webkit-scrollbar-track {
-  background: transparent;
+* {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
-::-webkit-scrollbar-thumb {
-  background: var(--color-border);
-  border-radius: 2px;
-}
-
-/* Input styling */
+/* Input date color scheme */
 input[type="date"],
 input[type="time"] {
+  color-scheme: light;
+}
+
+[data-theme="dark"] input[type="date"],
+[data-theme="dark"] input[type="time"] {
   color-scheme: dark;
 }
 
-[data-theme="light"] input[type="date"],
-[data-theme="light"] input[type="time"] {
-  color-scheme: light;
+/* iOS-style tap highlight */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Frosted glass utility */
+.glass {
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
 }

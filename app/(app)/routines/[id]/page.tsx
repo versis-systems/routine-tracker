@@ -56,15 +56,28 @@ function AddBlockModal({ groupId, onClose }: AddBlockModalProps) {
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-end" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-50 flex items-end"
+      style={{ backgroundColor: 'rgba(0,0,0,0.4)' }}
+      onClick={onClose}
+    >
       <div
-        className="bg-surface rounded-t-2xl w-full p-6 space-y-5"
+        className="w-full rounded-t-3xl p-6 space-y-5"
+        style={{ backgroundColor: 'var(--color-surface)' }}
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 className="text-base font-semibold text-text">Blok toevoegen</h2>
+        {/* Drag handle */}
+        <div className="flex justify-center -mt-1">
+          <div className="w-9 h-1 rounded-full" style={{ backgroundColor: 'var(--color-fill)' }} />
+        </div>
+        <h2 className="text-[17px] font-semibold text-center" style={{ color: 'var(--color-text)' }}>
+          Blok toevoegen
+        </h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <p className="text-sm font-medium text-text mb-2">Tijdstip</p>
+            <p className="text-[13px] font-semibold uppercase tracking-wide mb-2" style={{ color: 'var(--color-text-muted)' }}>
+              Tijdstip
+            </p>
             <div className="grid grid-cols-2 gap-2">
               {timeOptions.map((t) => {
                 const cfg = timeConfig[t]
@@ -73,11 +86,11 @@ function AddBlockModal({ groupId, onClose }: AddBlockModalProps) {
                     key={t}
                     type="button"
                     onClick={() => setSelectedTime(t)}
-                    className={`py-2.5 px-3 rounded-xl border text-sm font-medium transition-all text-left flex items-center gap-2 ${
-                      selectedTime === t
-                        ? 'border-primary bg-primary/10 text-primary'
-                        : 'border-border bg-surface-elevated text-text-muted hover:border-primary/50'
-                    }`}
+                    className="py-3 px-3 rounded-xl text-[15px] font-medium transition-all text-left flex items-center gap-2.5 focus:outline-none"
+                    style={{
+                      backgroundColor: selectedTime === t ? 'var(--color-primary)' : 'var(--color-fill)',
+                      color: selectedTime === t ? '#fff' : 'var(--color-text)',
+                    }}
                   >
                     <span>{cfg.icon}</span>
                     <span>{cfg.label}</span>
@@ -87,7 +100,10 @@ function AddBlockModal({ groupId, onClose }: AddBlockModalProps) {
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-text mb-1.5">
+            <label
+              className="block text-[13px] font-semibold uppercase tracking-wide mb-1.5"
+              style={{ color: 'var(--color-text-muted)' }}
+            >
               Naam (optioneel)
             </label>
             <input
@@ -95,11 +111,16 @@ function AddBlockModal({ groupId, onClose }: AddBlockModalProps) {
               value={customName}
               onChange={(e) => setCustomName(e.target.value)}
               placeholder={timeConfig[selectedTime].label}
-              className="w-full bg-surface-elevated border border-border rounded-xl px-4 py-3 text-text placeholder:text-text-muted focus:outline-none focus:border-primary transition-colors"
+              className="w-full rounded-xl px-4 py-3 text-[15px] focus:outline-none"
+              style={{
+                backgroundColor: 'var(--color-fill)',
+                color: 'var(--color-text)',
+                border: 'none',
+              }}
             />
           </div>
-          <div className="flex gap-3">
-            <Button type="button" variant="ghost" onClick={onClose} fullWidth>
+          <div className="flex gap-3 pt-1">
+            <Button type="button" variant="secondary" onClick={onClose} fullWidth>
               Annuleren
             </Button>
             <Button type="submit" loading={createRoutine.isPending} fullWidth>
@@ -135,15 +156,27 @@ function EditBlockModal({ routine, onClose }: EditBlockModalProps) {
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-end" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-50 flex items-end"
+      style={{ backgroundColor: 'rgba(0,0,0,0.4)' }}
+      onClick={onClose}
+    >
       <div
-        className="bg-surface rounded-t-2xl w-full p-6 space-y-5"
+        className="w-full rounded-t-3xl p-6 space-y-5"
+        style={{ backgroundColor: 'var(--color-surface)' }}
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 className="text-base font-semibold text-text">Blok bewerken</h2>
+        <div className="flex justify-center -mt-1">
+          <div className="w-9 h-1 rounded-full" style={{ backgroundColor: 'var(--color-fill)' }} />
+        </div>
+        <h2 className="text-[17px] font-semibold text-center" style={{ color: 'var(--color-text)' }}>
+          Blok bewerken
+        </h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <p className="text-sm font-medium text-text mb-2">Tijdstip</p>
+            <p className="text-[13px] font-semibold uppercase tracking-wide mb-2" style={{ color: 'var(--color-text-muted)' }}>
+              Tijdstip
+            </p>
             <div className="grid grid-cols-2 gap-2">
               {timeOptions.map((t) => {
                 const cfg = timeConfig[t]
@@ -152,11 +185,11 @@ function EditBlockModal({ routine, onClose }: EditBlockModalProps) {
                     key={t}
                     type="button"
                     onClick={() => setSelectedTime(t)}
-                    className={`py-2.5 px-3 rounded-xl border text-sm font-medium transition-all text-left flex items-center gap-2 ${
-                      selectedTime === t
-                        ? 'border-primary bg-primary/10 text-primary'
-                        : 'border-border bg-surface-elevated text-text-muted hover:border-primary/50'
-                    }`}
+                    className="py-3 px-3 rounded-xl text-[15px] font-medium transition-all text-left flex items-center gap-2.5 focus:outline-none"
+                    style={{
+                      backgroundColor: selectedTime === t ? 'var(--color-primary)' : 'var(--color-fill)',
+                      color: selectedTime === t ? '#fff' : 'var(--color-text)',
+                    }}
                   >
                     <span>{cfg.icon}</span>
                     <span>{cfg.label}</span>
@@ -166,17 +199,20 @@ function EditBlockModal({ routine, onClose }: EditBlockModalProps) {
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-text mb-1.5">Naam</label>
+            <label className="block text-[13px] font-semibold uppercase tracking-wide mb-1.5" style={{ color: 'var(--color-text-muted)' }}>
+              Naam
+            </label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder={timeConfig[selectedTime].label}
-              className="w-full bg-surface-elevated border border-border rounded-xl px-4 py-3 text-text placeholder:text-text-muted focus:outline-none focus:border-primary transition-colors"
+              className="w-full rounded-xl px-4 py-3 text-[15px] focus:outline-none"
+              style={{ backgroundColor: 'var(--color-fill)', color: 'var(--color-text)', border: 'none' }}
             />
           </div>
-          <div className="flex gap-3">
-            <Button type="button" variant="ghost" onClick={onClose} fullWidth>
+          <div className="flex gap-3 pt-1">
+            <Button type="button" variant="secondary" onClick={onClose} fullWidth>
               Annuleren
             </Button>
             <Button type="submit" loading={updateRoutine.isPending} fullWidth>
@@ -207,21 +243,31 @@ function BlockCard({ routine }: BlockCardProps) {
 
   return (
     <>
-      <div className="bg-surface rounded-2xl border border-border overflow-hidden">
+      <div
+        className="rounded-2xl overflow-hidden"
+        style={{ backgroundColor: 'var(--color-surface)', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}
+      >
         {/* Block header */}
-        <div className="flex items-center gap-3 px-4 py-3 border-b border-border">
-          <span className="text-lg leading-none">{cfg.icon}</span>
-          <span className="font-semibold text-text flex-1">{routine.name}</span>
+        <div
+          className="flex items-center gap-3 px-4 py-3.5"
+          style={{ borderBottom: '0.5px solid var(--color-separator)' }}
+        >
+          <span className="text-xl leading-none">{cfg.icon}</span>
+          <span className="text-[17px] font-semibold flex-1" style={{ color: 'var(--color-text)' }}>
+            {routine.name}
+          </span>
           <button
             onClick={() => setShowEdit(true)}
-            className="p-1.5 text-text-muted hover:text-text rounded-lg hover:bg-surface-elevated transition-colors"
+            className="p-2 rounded-full focus:outline-none active:opacity-60 transition-opacity"
+            style={{ color: 'var(--color-text-muted)' }}
           >
             <Pencil size={15} />
           </button>
           <button
             onClick={handleDelete}
             disabled={deleteRoutine.isPending}
-            className="p-1.5 text-text-muted hover:text-red-400 rounded-lg hover:bg-surface-elevated transition-colors"
+            className="p-2 rounded-full focus:outline-none active:opacity-60 transition-opacity disabled:opacity-40"
+            style={{ color: 'var(--color-danger)' }}
           >
             <Trash2 size={15} />
           </button>
@@ -274,12 +320,17 @@ function InlineNameEdit({ groupId, currentName }: InlineNameEditProps) {
             if (e.key === 'Enter') save()
             if (e.key === 'Escape') cancel()
           }}
-          className="text-xl font-bold text-text bg-surface-elevated border border-primary rounded-xl px-3 py-1 focus:outline-none"
+          className="text-[20px] font-bold rounded-xl px-3 py-1 focus:outline-none"
+          style={{
+            color: 'var(--color-text)',
+            backgroundColor: 'var(--color-fill)',
+            border: 'none',
+          }}
         />
-        <button onClick={save} className="p-1 text-success hover:text-success/80">
+        <button onClick={save} className="p-1 focus:outline-none" style={{ color: 'var(--color-success)' }}>
           <Check size={18} />
         </button>
-        <button onClick={cancel} className="p-1 text-text-muted hover:text-text">
+        <button onClick={cancel} className="p-1 focus:outline-none" style={{ color: 'var(--color-text-muted)' }}>
           <X size={18} />
         </button>
       </div>
@@ -289,7 +340,8 @@ function InlineNameEdit({ groupId, currentName }: InlineNameEditProps) {
   return (
     <button
       onClick={() => setEditing(true)}
-      className="text-xl font-bold text-text hover:text-primary transition-colors text-left"
+      className="text-[20px] font-bold text-left focus:outline-none transition-opacity active:opacity-60"
+      style={{ color: 'var(--color-text)' }}
     >
       {currentName}
     </button>
@@ -306,49 +358,57 @@ export default function GroupDetailPage({ params }: PageProps) {
   const routines = (group?.routines ?? []) as (Routine & { steps: Step[] })[]
 
   return (
-    <div className="px-4">
-      <div className="flex items-center justify-between pt-12 pb-6">
-        <div className="flex items-center gap-3">
+    <div className="px-4 pb-32">
+      {/* iOS-style navigation bar */}
+      <div className="flex items-center justify-between pt-14 pb-4">
+        <div className="flex items-center gap-2">
           <button
             onClick={() => router.back()}
-            className="p-2 -ml-2 text-text-muted hover:text-text rounded-xl hover:bg-surface-elevated transition-colors"
+            className="flex items-center gap-1 -ml-1 focus:outline-none active:opacity-60 transition-opacity"
+            style={{ color: 'var(--color-primary)' }}
           >
-            <ArrowLeft size={22} />
+            <ArrowLeft size={20} strokeWidth={2.5} />
+            <span className="text-[17px]">Terug</span>
           </button>
-          {group ? (
-            <InlineNameEdit groupId={group.id} currentName={group.name} />
-          ) : (
-            <h1 className="text-xl font-bold text-text">Routine</h1>
-          )}
         </div>
         <Link
           href={`/routines/${params.id}/info`}
-          className="p-2 text-text-muted hover:text-text rounded-xl hover:bg-surface-elevated transition-colors"
+          className="p-2 rounded-full focus:outline-none active:opacity-60 transition-opacity"
+          style={{ color: 'var(--color-primary)' }}
           aria-label="Info sectie"
         >
           <Info size={20} />
         </Link>
       </div>
 
+      {/* Page title */}
+      <div className="mb-5">
+        {group ? (
+          <InlineNameEdit groupId={group.id} currentName={group.name} />
+        ) : (
+          <h1 className="text-[34px] font-bold tracking-tight" style={{ color: 'var(--color-text)', lineHeight: 1.1 }}>
+            Routine
+          </h1>
+        )}
+      </div>
+
       {isLoading && (
         <div className="space-y-4">
-          <div className="h-48 bg-surface rounded-2xl border border-border animate-pulse" />
-          <div className="h-32 bg-surface rounded-2xl border border-border animate-pulse" />
+          <div className="h-48 rounded-2xl animate-pulse" style={{ backgroundColor: 'var(--color-surface)' }} />
+          <div className="h-32 rounded-2xl animate-pulse" style={{ backgroundColor: 'var(--color-surface)' }} />
         </div>
       )}
 
       {!isLoading && group && (
-        <div className="space-y-4 pb-8">
+        <div className="space-y-3">
           {/* Section label */}
-          <div className="flex items-center gap-3">
-            <div className="h-px flex-1 bg-border" />
-            <span className="text-xs font-semibold text-text-muted uppercase tracking-wide">
-              Blokken
-            </span>
-            <div className="h-px flex-1 bg-border" />
-          </div>
+          <p
+            className="text-[13px] font-semibold uppercase tracking-wide px-1"
+            style={{ color: 'var(--color-text-muted)' }}
+          >
+            Blokken
+          </p>
 
-          {/* Block cards */}
           {routines.map((routine) => (
             <BlockCard key={routine.id} routine={routine} />
           ))}
@@ -356,9 +416,14 @@ export default function GroupDetailPage({ params }: PageProps) {
           {/* Add block button */}
           <button
             onClick={() => setShowAddBlock(true)}
-            className="w-full py-3.5 rounded-2xl border border-dashed border-border text-text-muted hover:text-text hover:border-primary transition-colors text-sm flex items-center justify-center gap-2"
+            className="w-full py-3.5 rounded-2xl text-[15px] font-medium flex items-center justify-center gap-2 focus:outline-none active:opacity-60 transition-opacity"
+            style={{
+              border: '1.5px dashed var(--color-border)',
+              color: 'var(--color-primary)',
+              backgroundColor: 'transparent',
+            }}
           >
-            <Plus size={16} />
+            <Plus size={16} strokeWidth={2.5} />
             Blok toevoegen
           </button>
         </div>

@@ -16,7 +16,10 @@ export const metadata: Metadata = {
 }
 
 export const viewport: Viewport = {
-  themeColor: '#6366f1',
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#F2F2F7' },
+    { media: '(prefers-color-scheme: dark)', color: '#000000' },
+  ],
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
@@ -29,7 +32,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="nl" data-theme="dark">
+    <html lang="nl" data-theme="light">
       <head>
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
       </head>

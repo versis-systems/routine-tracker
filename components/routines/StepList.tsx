@@ -18,7 +18,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { GripVertical, Edit2, ChevronRight } from 'lucide-react'
+import { GripVertical, Edit2 } from 'lucide-react'
 import { Step } from '@/lib/types'
 import { useReorderSteps } from '@/lib/hooks/useRoutines'
 import StepForm from './StepForm'
@@ -36,51 +36,62 @@ function SortableStep({ step, onEdit }: SortableStepProps) {
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    opacity: isDragging ? 0.5 : 1,
+    opacity: isDragging ? 0.4 : step.is_active ? 1 : 0.4,
   }
 
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className={`flex items-center gap-3 p-3.5 rounded-xl border transition-all ${
-        isDragging ? 'bg-surface-elevated border-primary shadow-lg' : 'bg-surface border-border'
-      } ${!step.is_active ? 'opacity-40' : ''}`}
-    >
-      <button
-        {...attributes}
-        {...listeners}
-        className="text-text-muted hover:text-text cursor-grab active:cursor-grabbing touch-none"
+    <div ref={setNodeRef} style={style}>
+      <div
+        className="flex items-center gap-3 py-3 px-3 rounded-xl transition-all"
+        style={{
+          backgroundColor: isDragging ? 'var(--color-fill)' : 'var(--color-surface)',
+          border: isDragging ? '1px solid var(--color-primary)' : '1px solid var(--color-border)',
+        }}
       >
-        <GripVertical size={18} />
-      </button>
+        <button
+          {...attributes}
+          {...listeners}
+          className="cursor-grab active:cursor-grabbing touch-none focus:outline-none"
+          style={{ color: 'var(--color-text-muted)' }}
+        >
+          <GripVertical size={17} />
+        </button>
 
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-text truncate">{step.name}</p>
-        {step.note && (
-          <p className="text-xs text-text-muted truncate">{step.note}</p>
-        )}
-        <div className="flex items-center gap-2 mt-0.5">
-          <span className="text-xs text-text-muted">
-            {step.repeat_rule === 'daily' && 'Dagelijks'}
-            {step.repeat_rule === 'specific_days' &&
-              `${step.repeat_days.length} dag${step.repeat_days.length !== 1 ? 'en' : ''}/week`}
-            {step.repeat_rule === 'x_per_week' && `${step.repeat_count}×/week`}
-          </span>
-          {step.phase_enabled && (
-            <span className="text-xs bg-primary/10 text-primary px-1.5 py-0.5 rounded-full">
-              Opbouw
-            </span>
+        <div className="flex-1 min-w-0">
+          <p className="text-[15px] font-medium truncate" style={{ color: 'var(--color-text)' }}>
+            {step.name}
+          </p>
+          {step.note && (
+            <p className="text-[13px] truncate" style={{ color: 'var(--color-text-muted)' }}>
+              {step.note}
+            </p>
           )}
+          <div className="flex items-center gap-2 mt-0.5">
+            <span className="text-[12px]" style={{ color: 'var(--color-text-muted)' }}>
+              {step.repeat_rule === 'daily' && 'Dagelijks'}
+              {step.repeat_rule === 'specific_days' &&
+                `${step.repeat_days.length} dag${step.repeat_days.length !== 1 ? 'en' : ''}/week`}
+              {step.repeat_rule === 'x_per_week' && `${step.repeat_count}×/week`}
+            </span>
+            {step.phase_enabled && (
+              <span
+                className="text-[11px] font-medium px-1.5 py-0.5 rounded-full"
+                style={{ backgroundColor: 'var(--color-fill)', color: 'var(--color-primary)' }}
+              >
+                Opbouw
+              </span>
+            )}
+          </div>
         </div>
-      </div>
 
-      <button
-        onClick={onEdit}
-        className="text-text-muted hover:text-text p-1 rounded-lg hover:bg-surface-elevated transition-colors"
-      >
-        <Edit2 size={16} />
-      </button>
+        <button
+          onClick={onEdit}
+          className="p-1.5 rounded-full focus:outline-none active:opacity-60 transition-opacity"
+          style={{ color: 'var(--color-primary)' }}
+        >
+          <Edit2 size={15} />
+        </button>
+      </div>
     </div>
   )
 }
@@ -121,7 +132,6 @@ export default function StepList({ steps: initialSteps, routineId }: StepListPro
     )
   }
 
-
   return (
     <div className="space-y-2">
       <DndContext
@@ -142,7 +152,12 @@ export default function StepList({ steps: initialSteps, routineId }: StepListPro
 
       <button
         onClick={() => setShowAddForm(true)}
-        className="w-full py-3 rounded-xl border border-dashed border-border text-text-muted hover:text-text hover:border-primary transition-colors text-sm flex items-center justify-center gap-2"
+        className="w-full py-3 rounded-xl text-[15px] font-medium flex items-center justify-center gap-1.5 focus:outline-none active:opacity-60 transition-opacity"
+        style={{
+          border: '1.5px dashed var(--color-border)',
+          color: 'var(--color-primary)',
+          backgroundColor: 'transparent',
+        }}
       >
         + Stap toevoegen
       </button>

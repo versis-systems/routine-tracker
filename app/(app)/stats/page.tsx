@@ -8,7 +8,6 @@ import WeekView from '@/components/stats/WeekView'
 import ThemeToggle from '@/components/ui/ThemeToggle'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import Button from '@/components/ui/Button'
 import { useQuery } from '@tanstack/react-query'
 import { Package } from 'lucide-react'
 
@@ -60,9 +59,10 @@ function ProductsTab() {
 
   if (isLoading) {
     return (
-      <div className="space-y-4">
-        <div className="h-24 bg-surface rounded-2xl border border-border animate-pulse" />
-        <div className="h-40 bg-surface rounded-2xl border border-border animate-pulse" />
+      <div className="space-y-3">
+        {[1, 2].map((i) => (
+          <div key={i} className="h-24 rounded-2xl animate-pulse" style={{ backgroundColor: 'var(--color-surface)' }} />
+        ))}
       </div>
     )
   }
@@ -72,9 +72,7 @@ function ProductsTab() {
   const allProducts: { step: StepProduct; routineName: string }[] = []
   for (const routine of routines) {
     for (const step of routine.steps) {
-      if (step.product_name) {
-        allProducts.push({ step, routineName: routine.name })
-      }
+      if (step.product_name) allProducts.push({ step, routineName: routine.name })
     }
   }
 
@@ -82,35 +80,47 @@ function ProductsTab() {
   const notOwned = allProducts.filter((p) => !ownedMap[p.step.id])
 
   return (
-    <div className="space-y-4">
-      <div className="bg-surface rounded-2xl border border-border p-4">
-        <p className="text-sm text-text-muted">
-          <span className="font-semibold text-text">{owned.length}</span> van{' '}
-          <span className="font-semibold text-text">{allProducts.length}</span> producten in bezit
+    <div className="space-y-3">
+      <div
+        className="rounded-2xl px-4 py-3.5"
+        style={{ backgroundColor: 'var(--color-surface)', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}
+      >
+        <p className="text-[15px]" style={{ color: 'var(--color-text-muted)' }}>
+          <span className="font-semibold" style={{ color: 'var(--color-text)' }}>{owned.length}</span>{' '}
+          van{' '}
+          <span className="font-semibold" style={{ color: 'var(--color-text)' }}>{allProducts.length}</span>{' '}
+          producten in bezit
         </p>
       </div>
 
       {notOwned.length > 0 && (
-        <div className="bg-surface rounded-2xl border border-border overflow-hidden">
-          <div className="px-4 py-3 border-b border-border">
-            <p className="text-xs font-semibold text-text-muted uppercase tracking-wide">Nog te kopen</p>
+        <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: 'var(--color-surface)', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
+          <div className="px-4 py-3" style={{ borderBottom: '0.5px solid var(--color-separator)' }}>
+            <p className="text-[13px] font-semibold uppercase tracking-wide" style={{ color: 'var(--color-text-muted)' }}>
+              Nog te kopen
+            </p>
           </div>
-          <div className="divide-y divide-border/50">
-            {notOwned.map(({ step, routineName }) => (
-              <div key={step.id} className="flex items-center gap-3 px-4 py-3">
-                <input
-                  type="checkbox"
-                  checked={false}
-                  onChange={() => toggleOwned(step.id)}
-                  className="w-4 h-4 text-primary rounded border-border flex-shrink-0"
-                />
-                <Package size={14} className="text-text-muted flex-shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-text">{step.product_name}</p>
-                  {step.product_brand && (
-                    <p className="text-xs text-text-muted">{step.product_brand}</p>
-                  )}
-                  <p className="text-xs text-text-muted opacity-60">{routineName}</p>
+          <div>
+            {notOwned.map(({ step, routineName }, index) => (
+              <div key={step.id}>
+                {index > 0 && (
+                  <div className="ml-12" style={{ height: '0.5px', backgroundColor: 'var(--color-separator)' }} />
+                )}
+                <div className="flex items-center gap-3 px-4 py-3" onClick={() => toggleOwned(step.id)}>
+                  <div
+                    className="w-5 h-5 rounded-full border-2 flex-shrink-0 flex items-center justify-center cursor-pointer"
+                    style={{ borderColor: 'var(--color-border)' }}
+                  />
+                  <Package size={14} style={{ color: 'var(--color-text-muted)', flexShrink: 0 }} />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[15px] font-medium" style={{ color: 'var(--color-text)' }}>
+                      {step.product_name}
+                    </p>
+                    {step.product_brand && (
+                      <p className="text-[13px]" style={{ color: 'var(--color-text-muted)' }}>{step.product_brand}</p>
+                    )}
+                    <p className="text-[12px]" style={{ color: 'var(--color-text-muted)', opacity: 0.6 }}>{routineName}</p>
+                  </div>
                 </div>
               </div>
             ))}
@@ -119,26 +129,36 @@ function ProductsTab() {
       )}
 
       {owned.length > 0 && (
-        <div className="bg-surface rounded-2xl border border-border overflow-hidden">
-          <div className="px-4 py-3 border-b border-border">
-            <p className="text-xs font-semibold text-text-muted uppercase tracking-wide">In bezit</p>
+        <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: 'var(--color-surface)', boxShadow: '0 1px 3px rgba(0,0,0,0.06)', opacity: 0.7 }}>
+          <div className="px-4 py-3" style={{ borderBottom: '0.5px solid var(--color-separator)' }}>
+            <p className="text-[13px] font-semibold uppercase tracking-wide" style={{ color: 'var(--color-text-muted)' }}>
+              In bezit
+            </p>
           </div>
-          <div className="divide-y divide-border/50">
-            {owned.map(({ step, routineName }) => (
-              <div key={step.id} className="flex items-center gap-3 px-4 py-3 opacity-60">
-                <input
-                  type="checkbox"
-                  checked={true}
-                  onChange={() => toggleOwned(step.id)}
-                  className="w-4 h-4 text-primary rounded border-border flex-shrink-0"
-                />
-                <Package size={14} className="text-text-muted flex-shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-text line-through">{step.product_name}</p>
-                  {step.product_brand && (
-                    <p className="text-xs text-text-muted">{step.product_brand}</p>
-                  )}
-                  <p className="text-xs text-text-muted opacity-60">{routineName}</p>
+          <div>
+            {owned.map(({ step, routineName }, index) => (
+              <div key={step.id}>
+                {index > 0 && (
+                  <div className="ml-12" style={{ height: '0.5px', backgroundColor: 'var(--color-separator)' }} />
+                )}
+                <div className="flex items-center gap-3 px-4 py-3 cursor-pointer" onClick={() => toggleOwned(step.id)}>
+                  <div
+                    className="w-5 h-5 rounded-full flex-shrink-0 flex items-center justify-center"
+                    style={{ backgroundColor: 'var(--color-success)' }}
+                  >
+                    <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+                      <path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </div>
+                  <Package size={14} style={{ color: 'var(--color-text-muted)', flexShrink: 0 }} />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[15px] font-medium line-through" style={{ color: 'var(--color-text-muted)' }}>
+                      {step.product_name}
+                    </p>
+                    {step.product_brand && (
+                      <p className="text-[13px]" style={{ color: 'var(--color-text-muted)' }}>{step.product_brand}</p>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}
@@ -161,31 +181,39 @@ export default function StatsPage() {
   }
 
   return (
-    <div className="px-4">
-      <div className="flex items-center justify-between pt-12 pb-4">
-        <h1 className="text-2xl font-bold text-text">Statistieken</h1>
+    <div className="px-4 pb-32">
+      {/* Large title header */}
+      <div className="flex items-end justify-between pt-14 pb-2">
+        <h1 className="text-[34px] font-bold tracking-tight" style={{ color: 'var(--color-text)', lineHeight: 1.1 }}>
+          {activeTab === 'products' ? 'Producten' : 'Statistieken'}
+        </h1>
         <ThemeToggle />
       </div>
 
-      {/* Tab switcher */}
-      <div className="flex gap-2 mb-5 bg-surface border border-border rounded-xl p-1">
+      {/* iOS-style segmented control */}
+      <div
+        className="flex gap-1 rounded-xl p-1 mt-4 mb-5"
+        style={{ backgroundColor: 'var(--color-fill)' }}
+      >
         <button
           onClick={() => setActiveTab('stats')}
-          className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${
-            activeTab === 'stats'
-              ? 'bg-primary text-white'
-              : 'text-text-muted hover:text-text'
-          }`}
+          className="flex-1 py-1.5 rounded-lg text-[13px] font-semibold transition-all focus:outline-none"
+          style={{
+            backgroundColor: activeTab === 'stats' ? 'var(--color-surface)' : 'transparent',
+            color: 'var(--color-text)',
+            boxShadow: activeTab === 'stats' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+          }}
         >
           Statistieken
         </button>
         <button
           onClick={() => setActiveTab('products')}
-          className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${
-            activeTab === 'products'
-              ? 'bg-primary text-white'
-              : 'text-text-muted hover:text-text'
-          }`}
+          className="flex-1 py-1.5 rounded-lg text-[13px] font-semibold transition-all focus:outline-none"
+          style={{
+            backgroundColor: activeTab === 'products' ? 'var(--color-surface)' : 'transparent',
+            color: 'var(--color-text)',
+            boxShadow: activeTab === 'products' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+          }}
         >
           Producten
         </button>
@@ -196,9 +224,9 @@ export default function StatsPage() {
       {activeTab === 'stats' && (
         <>
           {isLoading && (
-            <div className="space-y-4">
-              <div className="h-24 bg-surface rounded-2xl border border-border animate-pulse" />
-              <div className="h-40 bg-surface rounded-2xl border border-border animate-pulse" />
+            <div className="space-y-3">
+              <div className="h-24 rounded-2xl animate-pulse" style={{ backgroundColor: 'var(--color-surface)' }} />
+              <div className="h-40 rounded-2xl animate-pulse" style={{ backgroundColor: 'var(--color-surface)' }} />
             </div>
           )}
 
@@ -206,48 +234,55 @@ export default function StatsPage() {
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="space-y-5"
+              className="space-y-3"
             >
               <StreakDisplay data={streak} />
 
-              <div className="bg-surface rounded-2xl border border-border p-4">
+              <div
+                className="rounded-2xl p-4"
+                style={{ backgroundColor: 'var(--color-surface)', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}
+              >
                 <WeekView weeklyData={streak.weeklyData} />
               </div>
 
-              {/* Motivational section */}
-              <div className="bg-primary/5 border border-primary/20 rounded-2xl p-4 text-center">
+              {/* Motivational card */}
+              <div
+                className="rounded-2xl p-4 text-center"
+                style={{ backgroundColor: 'var(--color-fill)' }}
+              >
                 {streak.currentStreak >= 7 ? (
                   <>
                     <p className="text-2xl mb-1">🔥</p>
-                    <p className="font-semibold text-text">Geweldig! {streak.currentStreak} dagen op rij!</p>
-                    <p className="text-sm text-text-muted mt-1">Blijf zo doorgaan!</p>
+                    <p className="text-[15px] font-semibold" style={{ color: 'var(--color-text)' }}>
+                      Geweldig! {streak.currentStreak} dagen op rij!
+                    </p>
+                    <p className="text-[13px] mt-1" style={{ color: 'var(--color-text-muted)' }}>Blijf zo doorgaan!</p>
                   </>
                 ) : streak.currentStreak >= 1 ? (
                   <>
                     <p className="text-2xl mb-1">⚡</p>
-                    <p className="font-semibold text-text">{streak.currentStreak} dag{streak.currentStreak !== 1 ? 'en' : ''} streak</p>
-                    <p className="text-sm text-text-muted mt-1">Je bent op weg naar een week!</p>
+                    <p className="text-[15px] font-semibold" style={{ color: 'var(--color-text)' }}>
+                      {streak.currentStreak} dag{streak.currentStreak !== 1 ? 'en' : ''} streak
+                    </p>
+                    <p className="text-[13px] mt-1" style={{ color: 'var(--color-text-muted)' }}>Je bent op weg naar een week!</p>
                   </>
                 ) : (
                   <>
                     <p className="text-2xl mb-1">🌱</p>
-                    <p className="font-semibold text-text">Begin vandaag</p>
-                    <p className="text-sm text-text-muted mt-1">Voltooi je routine om een streak te starten</p>
+                    <p className="text-[15px] font-semibold" style={{ color: 'var(--color-text)' }}>Begin vandaag</p>
+                    <p className="text-[13px] mt-1" style={{ color: 'var(--color-text-muted)' }}>Voltooi je routine om een streak te starten</p>
                   </>
                 )}
               </div>
 
               {/* Sign out */}
-              <div className="pt-2 pb-4">
-                <Button
-                  variant="ghost"
-                  onClick={handleSignOut}
-                  fullWidth
-                  className="text-text-muted hover:text-red-400"
-                >
-                  Uitloggen
-                </Button>
-              </div>
+              <button
+                onClick={handleSignOut}
+                className="w-full py-3.5 rounded-2xl text-[15px] font-medium focus:outline-none active:opacity-60 transition-opacity mt-2"
+                style={{ color: 'var(--color-danger)', backgroundColor: 'rgba(255, 59, 48, 0.08)' }}
+              >
+                Uitloggen
+              </button>
             </motion.div>
           )}
         </>

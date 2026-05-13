@@ -20,7 +20,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
       <div className="min-h-dvh bg-background">
-        <main className="pb-20 max-w-lg mx-auto">
+        <main className="max-w-lg mx-auto">
           {children}
         </main>
         <BottomNav />

@@ -21,35 +21,48 @@ function GroupCard({ group }: { group: RoutineGroup }) {
 
   return (
     <div
-      className="bg-surface rounded-2xl border border-border overflow-hidden cursor-pointer hover:border-primary/50 transition-all active:scale-98"
+      className="rounded-2xl overflow-hidden cursor-pointer active:opacity-70 transition-opacity"
+      style={{ backgroundColor: 'var(--color-surface)', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}
       onClick={() => router.push(`/routines/${group.id}`)}
     >
-      {/* Group header */}
-      <div className="flex items-center justify-between p-4 pb-3">
+      {/* Header */}
+      <div className="flex items-center px-4 py-3.5">
         <div className="flex-1 min-w-0">
-          <p className="font-semibold text-text text-base">{group.name}</p>
+          <p className="text-[17px] font-semibold" style={{ color: 'var(--color-text)' }}>
+            {group.name}
+          </p>
           {group.description && (
-            <p className="text-xs text-text-muted mt-0.5 truncate">{group.description}</p>
+            <p className="text-[13px] mt-0.5 truncate" style={{ color: 'var(--color-text-muted)' }}>
+              {group.description}
+            </p>
           )}
         </div>
-        <ChevronRight size={18} className="text-text-muted flex-shrink-0 ml-2" />
+        <ChevronRight size={17} style={{ color: 'var(--color-text-muted)', flexShrink: 0, marginLeft: 8 }} />
       </div>
 
       {/* Block rows */}
       {routines.length > 0 && (
-        <div className="border-t border-border divide-y divide-border/50">
-          {routines.map((routine) => {
+        <div style={{ borderTop: '0.5px solid var(--color-separator)' }}>
+          {routines.map((routine, index) => {
             const config = timeConfig[routine.time_of_day] ?? { label: routine.time_of_day, icon: '✨' }
             const activeStepCount = routine.steps?.filter((s) => s.is_active)?.length ?? 0
             return (
-              <div key={routine.id} className="flex items-center gap-2.5 px-4 py-2.5">
-                <span className="text-base leading-none">{config.icon}</span>
-                <span className="text-sm text-text-muted flex-1">
-                  {routine.name || config.label}
-                </span>
-                <span className="text-xs text-text-muted">
-                  {activeStepCount} stap{activeStepCount !== 1 ? 'pen' : ''}
-                </span>
+              <div key={routine.id}>
+                {index > 0 && (
+                  <div
+                    className="ml-11"
+                    style={{ height: '0.5px', backgroundColor: 'var(--color-separator)' }}
+                  />
+                )}
+                <div className="flex items-center gap-3 px-4 py-2.5">
+                  <span className="text-[17px] leading-none w-6 text-center">{config.icon}</span>
+                  <span className="text-[15px] flex-1" style={{ color: 'var(--color-text)' }}>
+                    {routine.name || config.label}
+                  </span>
+                  <span className="text-[13px]" style={{ color: 'var(--color-text-muted)' }}>
+                    {activeStepCount} stap{activeStepCount !== 1 ? 'pen' : ''}
+                  </span>
+                </div>
               </div>
             )
           })}
@@ -63,22 +76,30 @@ export default function RoutinesPage() {
   const { data: groups, isLoading } = useRoutineGroups()
 
   return (
-    <div className="px-4">
-      <div className="flex items-center justify-between pt-12 pb-6">
-        <h1 className="text-2xl font-bold text-text">Routines</h1>
+    <div className="px-4 pb-32">
+      {/* Large title header */}
+      <div className="flex items-end justify-between pt-14 pb-2">
+        <h1 className="text-[34px] font-bold tracking-tight" style={{ color: 'var(--color-text)', lineHeight: 1.1 }}>
+          Routines
+        </h1>
         <Link
           href="/routines/new"
-          className="flex items-center gap-1.5 bg-primary text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-primary-light transition-colors"
+          className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-[15px] font-semibold transition-all active:scale-95"
+          style={{ backgroundColor: 'var(--color-primary)', color: '#fff' }}
         >
-          <Plus size={16} />
+          <Plus size={16} strokeWidth={2.5} />
           Nieuw
         </Link>
       </div>
 
       {isLoading && (
-        <div className="space-y-3">
+        <div className="space-y-3 mt-5">
           {[1, 2].map((i) => (
-            <div key={i} className="h-32 bg-surface rounded-2xl border border-border animate-pulse" />
+            <div
+              key={i}
+              className="h-32 rounded-2xl animate-pulse"
+              style={{ backgroundColor: 'var(--color-surface)' }}
+            />
           ))}
         </div>
       )}
@@ -87,19 +108,23 @@ export default function RoutinesPage() {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="space-y-3"
+          className="space-y-3 mt-5"
         >
           {groups.length === 0 ? (
-            <div className="flex flex-col items-center text-center py-12 gap-4">
-              <p className="text-5xl">🌿</p>
+            <div className="flex flex-col items-center text-center py-16 gap-5">
+              <p className="text-6xl">🌿</p>
               <div>
-                <p className="text-text font-semibold text-base">Geen routines</p>
-                <p className="text-text-muted text-sm mt-1">
+                <p className="text-[17px] font-semibold" style={{ color: 'var(--color-text)' }}>
+                  Geen routines
+                </p>
+                <p className="text-[15px] mt-1" style={{ color: 'var(--color-text-muted)' }}>
                   Start met de vooraf ingevulde skincare routine, of maak zelf een nieuwe aan.
                 </p>
               </div>
               <ImportRoutineButton />
-              <p className="text-text-muted text-xs">of gebruik de knop rechtsboven</p>
+              <p className="text-[13px]" style={{ color: 'var(--color-text-muted)' }}>
+                of gebruik de knop rechtsboven
+              </p>
             </div>
           ) : (
             groups.map((group, i) => (
@@ -107,7 +132,7 @@ export default function RoutinesPage() {
                 key={group.id}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.05 }}
+                transition={{ delay: i * 0.05, ease: [0.25, 0.46, 0.45, 0.94] }}
               >
                 <GroupCard group={group} />
               </motion.div>

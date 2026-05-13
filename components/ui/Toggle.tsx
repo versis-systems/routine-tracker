@@ -15,14 +15,24 @@ export default function Toggle({ checked, onChange, label, disabled }: TogglePro
         aria-checked={checked}
         onClick={() => !disabled && onChange(!checked)}
         disabled={disabled}
-        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background disabled:opacity-50 disabled:cursor-not-allowed ${
-          checked ? 'bg-primary' : 'bg-border'
-        }`}
+        className="relative flex-shrink-0 transition-all duration-300 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+        style={{
+          width: 51,
+          height: 31,
+          borderRadius: 31,
+          backgroundColor: checked ? 'var(--color-success)' : 'var(--color-fill)',
+          transition: 'background-color 0.3s ease',
+        }}
       >
         <span
-          className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform duration-200 ${
-            checked ? 'translate-x-6' : 'translate-x-1'
-          }`}
+          className="absolute top-0.5 bg-white rounded-full shadow-md"
+          style={{
+            width: 27,
+            height: 27,
+            left: checked ? 'calc(100% - 29px)' : 2,
+            transition: 'left 0.3s cubic-bezier(0.23, 1, 0.32, 1)',
+            boxShadow: '0 2px 6px rgba(0,0,0,0.25)',
+          }}
         />
       </button>
       {label && <span className="text-sm text-text">{label}</span>}

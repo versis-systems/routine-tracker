@@ -5,8 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { seedUserData } from '@/lib/seed'
-import Button from '@/components/ui/Button'
-import { Mail, Lock, User } from 'lucide-react'
+import { Mail, Lock } from 'lucide-react'
 
 export default function SignupPage() {
   const router = useRouter()
@@ -23,89 +22,85 @@ export default function SignupPage() {
     e.preventDefault()
     setError(null)
 
-    if (password !== confirm) {
-      setError('Wachtwoorden komen niet overeen')
-      return
-    }
-
-    if (password.length < 6) {
-      setError('Wachtwoord moet minimaal 6 tekens lang zijn')
-      return
-    }
+    if (password !== confirm) { setError('Wachtwoorden komen niet overeen'); return }
+    if (password.length < 6) { setError('Wachtwoord moet minimaal 6 tekens lang zijn'); return }
 
     setLoading(true)
 
     const { data, error: signupError } = await supabase.auth.signUp({
       email,
       password,
-      options: {
-        emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/today`,
-      },
+      options: { emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/today` },
     })
 
-    if (signupError) {
-      setError(signupError.message)
-      setLoading(false)
-      return
-    }
+    if (signupError) { setError(signupError.message); setLoading(false); return }
 
-    // If user was immediately created (no email confirmation required)
     if (data.user && data.session) {
-      try {
-        await seedUserData(data.user.id)
-      } catch (e) {
-        console.error('Seed error:', e)
-      }
+      try { await seedUserData(data.user.id) } catch (e) { console.error('Seed error:', e) }
       router.push('/today')
       router.refresh()
     } else {
       setSuccess(true)
     }
-
     setLoading(false)
   }
 
   return (
-    <div className="min-h-dvh bg-background flex flex-col items-center justify-center p-6">
+    <div
+      className="min-h-dvh flex flex-col items-center justify-center p-6"
+      style={{ backgroundColor: 'var(--color-background)' }}
+    >
       <div className="w-full max-w-sm">
-        <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <span className="text-3xl">🌱</span>
+        <div className="text-center mb-10">
+          <div
+            className="w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-5"
+            style={{ backgroundColor: 'var(--color-fill)' }}
+          >
+            <span className="text-4xl">🌱</span>
           </div>
-          <h1 className="text-2xl font-bold text-text">Account aanmaken</h1>
-          <p className="text-text-muted text-sm mt-1">Start je persoonlijke routine tracker</p>
+          <h1 className="text-[28px] font-bold" style={{ color: 'var(--color-text)' }}>Account aanmaken</h1>
+          <p className="text-[15px] mt-1" style={{ color: 'var(--color-text-muted)' }}>Start je persoonlijke routine tracker</p>
         </div>
 
         {success ? (
-          <div className="bg-success/10 border border-success/30 rounded-2xl p-5 text-center">
-            <p className="text-success font-medium mb-1">Controleer je inbox!</p>
-            <p className="text-sm text-text-muted">
+          <div
+            className="rounded-2xl p-5 text-center"
+            style={{ backgroundColor: 'rgba(52, 199, 89, 0.1)' }}
+          >
+            <p className="text-[17px] font-semibold mb-1" style={{ color: 'var(--color-success)' }}>
+              Controleer je inbox!
+            </p>
+            <p className="text-[15px]" style={{ color: 'var(--color-text-muted)' }}>
               We hebben een bevestigingsmail gestuurd naar{' '}
-              <strong className="text-text">{email}</strong>. Klik op de link om je account te activeren.
+              <strong style={{ color: 'var(--color-text)' }}>{email}</strong>.
             </p>
           </div>
         ) : (
-          <form onSubmit={handleSignup} className="space-y-4">
+          <form onSubmit={handleSignup} className="space-y-3">
             {error && (
-              <div className="bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-3 text-sm text-red-400">
+              <div
+                className="rounded-xl px-4 py-3 text-[14px]"
+                style={{ backgroundColor: 'rgba(255,59,48,0.08)', color: 'var(--color-danger)' }}
+              >
                 {error}
               </div>
             )}
 
             <div className="relative">
-              <Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted" />
+              <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2" style={{ color: 'var(--color-text-muted)' }} />
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 placeholder="E-mailadres"
-                className="w-full bg-surface border border-border rounded-xl pl-10 pr-4 py-3 text-text placeholder:text-text-muted focus:outline-none focus:border-primary transition-colors"
+                className="w-full rounded-xl pl-11 pr-4 py-3.5 text-[15px] focus:outline-none"
+                style={{ backgroundColor: 'var(--color-surface)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}
               />
             </div>
 
             <div className="relative">
-              <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted" />
+              <Lock size={16} className="absolute left-4 top-1/2 -translate-y-1/2" style={{ color: 'var(--color-text-muted)' }} />
               <input
                 type="password"
                 value={password}
@@ -113,31 +108,38 @@ export default function SignupPage() {
                 required
                 minLength={6}
                 placeholder="Wachtwoord (min. 6 tekens)"
-                className="w-full bg-surface border border-border rounded-xl pl-10 pr-4 py-3 text-text placeholder:text-text-muted focus:outline-none focus:border-primary transition-colors"
+                className="w-full rounded-xl pl-11 pr-4 py-3.5 text-[15px] focus:outline-none"
+                style={{ backgroundColor: 'var(--color-surface)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}
               />
             </div>
 
             <div className="relative">
-              <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted" />
+              <Lock size={16} className="absolute left-4 top-1/2 -translate-y-1/2" style={{ color: 'var(--color-text-muted)' }} />
               <input
                 type="password"
                 value={confirm}
                 onChange={(e) => setConfirm(e.target.value)}
                 required
                 placeholder="Wachtwoord bevestigen"
-                className="w-full bg-surface border border-border rounded-xl pl-10 pr-4 py-3 text-text placeholder:text-text-muted focus:outline-none focus:border-primary transition-colors"
+                className="w-full rounded-xl pl-11 pr-4 py-3.5 text-[15px] focus:outline-none"
+                style={{ backgroundColor: 'var(--color-surface)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}
               />
             </div>
 
-            <Button type="submit" loading={loading} fullWidth size="lg">
-              Account aanmaken
-            </Button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-4 rounded-2xl text-[17px] font-semibold text-white transition-all active:scale-98 disabled:opacity-50 focus:outline-none mt-1"
+              style={{ backgroundColor: 'var(--color-primary)' }}
+            >
+              {loading ? 'Bezig…' : 'Account aanmaken'}
+            </button>
           </form>
         )}
 
-        <p className="text-center text-sm text-text-muted mt-6">
+        <p className="text-center text-[15px] mt-6" style={{ color: 'var(--color-text-muted)' }}>
           Al een account?{' '}
-          <Link href="/login" className="text-primary font-medium hover:underline">
+          <Link href="/login" className="font-semibold" style={{ color: 'var(--color-primary)' }}>
             Inloggen
           </Link>
         </p>

@@ -22,12 +22,7 @@ interface RoutineCardProps {
   onToggleStep: (stepId: string, isCompleted: boolean) => void
 }
 
-export default function RoutineCard({
-  routine,
-  completions,
-  date,
-  onToggleStep,
-}: RoutineCardProps) {
+export default function RoutineCard({ routine, completions, date, onToggleStep }: RoutineCardProps) {
   const [isExpanded, setIsExpanded] = useState(true)
   const [notesOpen, setNotesOpen] = useState(false)
 
@@ -43,60 +38,78 @@ export default function RoutineCard({
   return (
     <motion.div
       layout
-      className={`rounded-2xl border overflow-hidden transition-colors duration-300 ${
-        isAllDone
-          ? 'border-success/30 bg-success/5'
-          : 'border-border bg-surface'
-      }`}
+      className="rounded-2xl overflow-hidden"
+      style={{
+        backgroundColor: 'var(--color-surface)',
+        border: isAllDone ? '1px solid rgba(52, 199, 89, 0.3)' : 'none',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+      }}
     >
       {/* Header */}
-      <div className="w-full flex items-center gap-3 p-4">
-        <button
-          onClick={() => setIsExpanded(!isExpanded)}
-          className="flex-1 min-w-0 text-left"
-        >
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-xs font-medium text-text-muted">
-              {timeOfDayLabels[routine.time_of_day] || routine.time_of_day}
-            </span>
-            {isAllDone && (
-              <motion.span
-                initial={{ scale: 0, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                className="text-xs font-semibold text-success bg-success/10 px-2 py-0.5 rounded-full"
-              >
-                Klaar!
-              </motion.span>
-            )}
-          </div>
-          <p className="text-base font-semibold text-text">{routine.name}</p>
-          <div className="mt-2">
-            <ProgressBar value={progress} />
-          </div>
-          <p className="text-xs text-text-muted mt-1">
-            {completedCount}/{totalCount} stappen
-          </p>
-        </button>
-        <div className="flex items-center gap-2 flex-shrink-0">
-          {routine.notes && (
-            <button
-              onClick={() => setNotesOpen((prev) => !prev)}
-              className={`text-text-muted hover:text-primary transition-colors ${notesOpen ? 'text-primary' : ''}`}
-              aria-label="Toon notities"
-            >
-              <Info size={18} />
-            </button>
-          )}
+      <div className="px-4 pt-4 pb-3">
+        <div className="flex items-start justify-between gap-3">
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className="text-text-muted"
-            aria-label={isExpanded ? 'Inklappen' : 'Uitklappen'}
+            className="flex-1 min-w-0 text-left focus:outline-none"
           >
-            <ChevronDown
-              size={18}
-              className={`transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
-            />
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-[13px]" style={{ color: 'var(--color-text-muted)', fontWeight: 500 }}>
+                {timeOfDayLabels[routine.time_of_day] || routine.time_of_day}
+              </span>
+              <AnimatePresence>
+                {isAllDone && (
+                  <motion.span
+                    initial={{ scale: 0, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0, opacity: 0 }}
+                    className="text-[12px] font-semibold px-2 py-0.5 rounded-full"
+                    style={{ color: 'var(--color-success)', backgroundColor: 'rgba(52, 199, 89, 0.12)' }}
+                  >
+                    Klaar ✓
+                  </motion.span>
+                )}
+              </AnimatePresence>
+            </div>
+            <p className="text-[17px] font-semibold" style={{ color: 'var(--color-text)' }}>
+              {routine.name}
+            </p>
           </button>
+
+          <div className="flex items-center gap-1.5 flex-shrink-0 mt-0.5">
+            {routine.notes && (
+              <button
+                onClick={() => setNotesOpen((prev) => !prev)}
+                className="p-1.5 rounded-full transition-colors focus:outline-none"
+                style={{
+                  color: notesOpen ? 'var(--color-primary)' : 'var(--color-text-muted)',
+                  backgroundColor: notesOpen ? 'var(--color-fill)' : 'transparent',
+                }}
+                aria-label="Toon notities"
+              >
+                <Info size={17} />
+              </button>
+            )}
+            <button
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="p-1.5 rounded-full transition-all focus:outline-none"
+              style={{ color: 'var(--color-text-muted)' }}
+            >
+              <motion.div
+                animate={{ rotate: isExpanded ? 180 : 0 }}
+                transition={{ duration: 0.25, ease: [0.25, 0.46, 0.45, 0.94] }}
+              >
+                <ChevronDown size={18} />
+              </motion.div>
+            </button>
+          </div>
+        </div>
+
+        {/* Progress */}
+        <div className="mt-3">
+          <ProgressBar value={progress} height={3} />
+          <p className="text-[12px] mt-1.5" style={{ color: 'var(--color-text-muted)' }}>
+            {completedCount} van {totalCount}
+          </p>
         </div>
       </div>
 
@@ -107,11 +120,14 @@ export default function RoutineCard({
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2, ease: 'easeInOut' }}
+            transition={{ duration: 0.22, ease: 'easeInOut' }}
             className="overflow-hidden"
           >
-            <div className="mx-4 mb-3 bg-primary/5 border border-primary/20 rounded-xl px-3 py-2.5">
-              <p className="text-xs text-text leading-relaxed whitespace-pre-line">
+            <div
+              className="mx-4 mb-3 rounded-xl px-3.5 py-3"
+              style={{ backgroundColor: 'var(--color-fill)', border: 'none' }}
+            >
+              <p className="text-[13px] leading-relaxed whitespace-pre-line" style={{ color: 'var(--color-text)' }}>
                 {routine.notes}
               </p>
             </div>
@@ -119,25 +135,37 @@ export default function RoutineCard({
         )}
       </AnimatePresence>
 
-      {/* Steps */}
+      {/* Steps — iOS inset grouped list style */}
       <AnimatePresence>
         {isExpanded && (
           <motion.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2, ease: 'easeInOut' }}
+            transition={{ duration: 0.22, ease: 'easeInOut' }}
             className="overflow-hidden"
           >
-            <div className="px-4 pb-4 border-t border-border divide-y divide-border/50">
-              {activeSteps.map((step) => (
-                <StepCheckbox
-                  key={step.id}
-                  step={step}
-                  isCompleted={completedStepIds.has(step.id)}
-                  onToggle={() => onToggleStep(step.id, completedStepIds.has(step.id))}
-                  date={date}
-                />
+            <div
+              className="mx-3 mb-3 rounded-xl overflow-hidden"
+              style={{ backgroundColor: 'var(--color-fill-secondary)' }}
+            >
+              {activeSteps.map((step, index) => (
+                <div key={step.id}>
+                  {index > 0 && (
+                    <div
+                      className="ml-12"
+                      style={{ height: '0.5px', backgroundColor: 'var(--color-separator)' }}
+                    />
+                  )}
+                  <div className="px-3">
+                    <StepCheckbox
+                      step={step}
+                      isCompleted={completedStepIds.has(step.id)}
+                      onToggle={() => onToggleStep(step.id, completedStepIds.has(step.id))}
+                      date={date}
+                    />
+                  </div>
+                </div>
               ))}
             </div>
           </motion.div>

@@ -23,7 +23,6 @@ export default function TodayPage() {
     toggleCompletion.mutate({ stepId, date: selectedDate, isCompleted })
   }
 
-  // Flatten all routines across all groups for progress calculation
   const allRoutines = groups?.flatMap((g) => (g.routines ?? []) as (Routine & { steps: Step[] })[]) ?? []
   const allActiveSteps = allRoutines.flatMap((r) =>
     r.steps.filter((s) => isStepActiveToday(s, selectedDate))
@@ -33,37 +32,44 @@ export default function TodayPage() {
   const totalCount = allActiveSteps.length
   const overallProgress = totalCount > 0 ? (completedCount / totalCount) * 100 : 0
 
-  // Only show group headers when there are multiple groups
   const showGroupHeaders = (groups?.length ?? 0) > 1
 
   return (
-    <div className="px-4 pt-safe">
-      {/* Header */}
-      <div className="flex items-center justify-between pt-12 pb-4">
-        <h1 className="text-2xl font-bold text-text">Dagboek</h1>
+    <div className="px-4 pb-32">
+      {/* Large title header */}
+      <div className="flex items-end justify-between pt-14 pb-2">
+        <h1 className="text-[34px] font-bold tracking-tight" style={{ color: 'var(--color-text)', lineHeight: 1.1 }}>
+          Vandaag
+        </h1>
         <ThemeToggle />
       </div>
 
       {/* Date selector */}
-      <div className="mb-5">
+      <div className="mt-3 mb-5">
         <DaySelector selectedDate={selectedDate} onDateChange={setSelectedDate} />
       </div>
 
-      {/* Overall progress */}
+      {/* Overall progress card */}
       {totalCount > 0 && (
-        <div className="mb-5 bg-surface rounded-2xl border border-border p-4">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-text">Totale voortgang</span>
-            <span className="text-sm font-semibold text-primary">
+        <div
+          className="mb-5 rounded-2xl p-4"
+          style={{ backgroundColor: 'var(--color-surface)', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}
+        >
+          <div className="flex items-center justify-between mb-2.5">
+            <span className="text-[15px] font-medium" style={{ color: 'var(--color-text)' }}>
+              Voortgang
+            </span>
+            <span className="text-[15px] font-semibold" style={{ color: 'var(--color-primary)' }}>
               {completedCount}/{totalCount}
             </span>
           </div>
-          <ProgressBar value={overallProgress} height={8} />
+          <ProgressBar value={overallProgress} height={6} />
           {overallProgress === 100 && (
             <motion.p
               initial={{ opacity: 0, y: 4 }}
               animate={{ opacity: 1, y: 0 }}
-              className="text-center text-sm font-medium text-success mt-2"
+              className="text-center text-[14px] font-semibold mt-2.5"
+              style={{ color: 'var(--color-success)' }}
             >
               Alles gedaan! 🎉
             </motion.p>
@@ -71,29 +77,35 @@ export default function TodayPage() {
         </div>
       )}
 
-      {/* Loading */}
+      {/* Loading skeletons */}
       {isLoading && (
-        <div className="space-y-4">
+        <div className="space-y-3">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-32 bg-surface rounded-2xl border border-border animate-pulse" />
+            <div
+              key={i}
+              className="h-28 rounded-2xl animate-pulse"
+              style={{ backgroundColor: 'var(--color-surface)' }}
+            />
           ))}
         </div>
       )}
 
-      {/* Groups + routines */}
+      {/* Content */}
       {!isLoading && groups && (
         <AnimatePresence>
-          <div className="space-y-4">
+          <div className="space-y-3">
             {groups.length === 0 ? (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="flex flex-col items-center text-center py-12 gap-4"
+                className="flex flex-col items-center text-center py-16 gap-5"
               >
-                <p className="text-5xl">✨</p>
+                <p className="text-6xl">✨</p>
                 <div>
-                  <p className="text-text font-semibold text-base">Welkom! Je hebt nog geen routines.</p>
-                  <p className="text-text-muted text-sm mt-1">
+                  <p className="text-[17px] font-semibold" style={{ color: 'var(--color-text)' }}>
+                    Welkom! Je hebt nog geen routines.
+                  </p>
+                  <p className="text-[15px] mt-1" style={{ color: 'var(--color-text-muted)' }}>
                     Importeer de skincare routine als startpunt, of maak er zelf een aan via Routines.
                   </p>
                 </div>
@@ -102,7 +114,6 @@ export default function TodayPage() {
             ) : (
               groups.map((group, groupIndex) => {
                 const routines = (group.routines ?? []) as (Routine & { steps: Step[] })[]
-                // Filter to routines that have at least 1 active step today
                 const activeRoutines = routines.filter((r) =>
                   r.steps.some((s) => isStepActiveToday(s, selectedDate))
                 )
@@ -111,26 +122,25 @@ export default function TodayPage() {
                 return (
                   <motion.div
                     key={group.id}
-                    initial={{ opacity: 0, y: 16 }}
+                    initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: groupIndex * 0.07 }}
+                    transition={{ delay: groupIndex * 0.06, ease: [0.25, 0.46, 0.45, 0.94] }}
                     className="space-y-3"
                   >
                     {showGroupHeaders && (
-                      <div className="flex items-center gap-3 mt-2">
-                        <div className="h-px flex-1 bg-border" />
-                        <span className="text-xs font-semibold text-text-muted uppercase tracking-wide">
-                          {group.name}
-                        </span>
-                        <div className="h-px flex-1 bg-border" />
-                      </div>
+                      <p
+                        className="text-[13px] font-semibold uppercase tracking-wide px-1"
+                        style={{ color: 'var(--color-text-muted)' }}
+                      >
+                        {group.name}
+                      </p>
                     )}
                     {activeRoutines.map((routine, routineIndex) => (
                       <motion.div
                         key={routine.id}
                         initial={{ opacity: 0, y: 8 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: groupIndex * 0.07 + routineIndex * 0.04 }}
+                        transition={{ delay: groupIndex * 0.06 + routineIndex * 0.04 }}
                       >
                         <RoutineCard
                           routine={routine}

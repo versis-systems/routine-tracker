@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion'
 
 interface ProgressBarProps {
-  value: number // 0-100
+  value: number
   label?: string
   showPercent?: boolean
   color?: string
@@ -14,8 +14,8 @@ export default function ProgressBar({
   value,
   label,
   showPercent = false,
-  color = 'bg-primary',
-  height = 6,
+  color,
+  height = 4,
 }: ProgressBarProps) {
   const clamped = Math.min(100, Math.max(0, value))
 
@@ -30,14 +30,15 @@ export default function ProgressBar({
         </div>
       )}
       <div
-        className="w-full bg-surface-elevated rounded-full overflow-hidden"
-        style={{ height }}
+        className="w-full rounded-full overflow-hidden"
+        style={{ height, backgroundColor: 'var(--color-fill)' }}
       >
         <motion.div
-          className={`h-full rounded-full ${color}`}
+          className="h-full rounded-full"
+          style={{ backgroundColor: color ?? 'var(--color-primary)' }}
           initial={{ width: 0 }}
           animate={{ width: `${clamped}%` }}
-          transition={{ duration: 0.4, ease: 'easeOut' }}
+          transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
         />
       </div>
     </div>

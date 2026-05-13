@@ -5,7 +5,7 @@ import { Step, RepeatRule } from '@/lib/types'
 import Button from '@/components/ui/Button'
 import Toggle from '@/components/ui/Toggle'
 import { useCreateStep, useUpdateStep, useDeleteStep } from '@/lib/hooks/useRoutines'
-import { X } from 'lucide-react'
+import { X, Trash2 } from 'lucide-react'
 
 interface StepFormProps {
   routineId: string
@@ -21,6 +21,32 @@ const repeatRuleOptions: { value: RepeatRule; label: string }[] = [
   { value: 'specific_days', label: 'Specifieke dagen' },
   { value: 'x_per_week', label: 'X per week' },
 ]
+
+function FieldLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <label className="block text-[13px] font-semibold uppercase tracking-wide mb-1.5" style={{ color: 'var(--color-text-muted)' }}>
+      {children}
+    </label>
+  )
+}
+
+function TextInput({ value, onChange, placeholder, required }: { value: string; onChange: (v: string) => void; placeholder?: string; required?: boolean }) {
+  return (
+    <input
+      type="text"
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      required={required}
+      placeholder={placeholder}
+      className="w-full rounded-xl px-4 py-3 text-[15px] focus:outline-none"
+      style={{
+        backgroundColor: 'var(--color-fill)',
+        color: 'var(--color-text)',
+        border: 'none',
+      }}
+    />
+  )
+}
 
 export default function StepForm({ routineId, step, sortOrder = 0, onClose }: StepFormProps) {
   const createStep = useCreateStep()
@@ -51,7 +77,6 @@ export default function StepForm({ routineId, step, sortOrder = 0, onClose }: St
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-
     const data = {
       routine_id: routineId,
       name,
@@ -68,13 +93,11 @@ export default function StepForm({ routineId, step, sortOrder = 0, onClose }: St
       phase_start_date: phaseEnabled ? phaseStartDate : null,
       phase_config: step?.phase_config ?? null,
     }
-
     if (isEditing && step?.id) {
       await updateStep.mutateAsync({ id: step.id, ...data })
     } else {
       await createStep.mutateAsync(data)
     }
-
     onClose()
   }
 
@@ -87,99 +110,88 @@ export default function StepForm({ routineId, step, sortOrder = 0, onClose }: St
   const isPending = createStep.isPending || updateStep.isPending
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="w-full max-w-md bg-surface rounded-2xl border border-border overflow-hidden">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-border">
-          <h3 className="font-semibold text-text">
+    <div
+      className="fixed inset-0 z-50 flex items-end"
+      style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-lg mx-auto rounded-t-3xl overflow-hidden"
+        style={{ backgroundColor: 'var(--color-surface)' }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div
+          className="flex items-center justify-between px-5 py-4"
+          style={{ borderBottom: '0.5px solid var(--color-separator)' }}
+        >
+          <button
+            onClick={onClose}
+            className="text-[15px] font-medium focus:outline-none"
+            style={{ color: 'var(--color-primary)' }}
+          >
+            Annuleren
+          </button>
+          <h3 className="text-[17px] font-semibold" style={{ color: 'var(--color-text)' }}>
             {isEditing ? 'Stap bewerken' : 'Stap toevoegen'}
           </h3>
-          <button onClick={onClose} className="text-text-muted hover:text-text">
-            <X size={20} />
+          <button
+            form="step-form"
+            type="submit"
+            disabled={isPending}
+            className="text-[15px] font-semibold focus:outline-none disabled:opacity-50"
+            style={{ color: 'var(--color-primary)' }}
+          >
+            {isPending ? '…' : isEditing ? 'Opslaan' : 'Voeg toe'}
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-5 space-y-4 max-h-[80vh] overflow-y-auto">
+        <form id="step-form" onSubmit={handleSubmit} className="p-5 space-y-5 max-h-[75vh] overflow-y-auto">
           <div>
-            <label className="block text-xs font-medium text-text-muted mb-1.5 uppercase tracking-wide">
-              Naam *
-            </label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-              placeholder="Bijv. Vitamine C serum"
-              className="w-full bg-surface-elevated border border-border rounded-xl px-4 py-2.5 text-sm text-text placeholder:text-text-muted focus:outline-none focus:border-primary"
-            />
+            <FieldLabel>Naam *</FieldLabel>
+            <TextInput value={name} onChange={setName} placeholder="Bijv. Vitamine C serum" required />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-text-muted mb-1.5 uppercase tracking-wide">
-              Notitie
-            </label>
-            <input
-              type="text"
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              placeholder="Bijv. op droge huid aanbrengen"
-              className="w-full bg-surface-elevated border border-border rounded-xl px-4 py-2.5 text-sm text-text placeholder:text-text-muted focus:outline-none focus:border-primary"
-            />
+            <FieldLabel>Notitie</FieldLabel>
+            <TextInput value={note} onChange={setNote} placeholder="Bijv. op droge huid aanbrengen" />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-text-muted mb-1.5 uppercase tracking-wide">
-              Instructies
-            </label>
+            <FieldLabel>Instructies</FieldLabel>
             <textarea
               value={instructions}
               onChange={(e) => setInstructions(e.target.value)}
-              placeholder="Bijv. Breng een kleine hoeveelheid aan op droge huid, vermijd het ooggebied. Wacht 1 minuut voor de volgende stap."
+              placeholder="Bijv. Breng een kleine hoeveelheid aan, vermijd het ooggebied…"
               rows={3}
-              className="w-full bg-surface-elevated border border-border rounded-xl px-4 py-2.5 text-sm text-text placeholder:text-text-muted focus:outline-none focus:border-primary resize-none"
+              className="w-full rounded-xl px-4 py-3 text-[15px] focus:outline-none resize-none"
+              style={{ backgroundColor: 'var(--color-fill)', color: 'var(--color-text)', border: 'none' }}
             />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-text-muted mb-1.5 uppercase tracking-wide">
-              Productnaam
-            </label>
-            <input
-              type="text"
-              value={productName}
-              onChange={(e) => setProductName(e.target.value)}
-              placeholder="Bijv. Retinol 0.5% in Squalane"
-              className="w-full bg-surface-elevated border border-border rounded-xl px-4 py-2.5 text-sm text-text placeholder:text-text-muted focus:outline-none focus:border-primary"
-            />
+            <FieldLabel>Productnaam</FieldLabel>
+            <TextInput value={productName} onChange={setProductName} placeholder="Bijv. Retinol 0.5% in Squalane" />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-text-muted mb-1.5 uppercase tracking-wide">
-              Merk
-            </label>
-            <input
-              type="text"
-              value={productBrand}
-              onChange={(e) => setProductBrand(e.target.value)}
-              placeholder="Bijv. The Ordinary"
-              className="w-full bg-surface-elevated border border-border rounded-xl px-4 py-2.5 text-sm text-text placeholder:text-text-muted focus:outline-none focus:border-primary"
-            />
+            <FieldLabel>Merk</FieldLabel>
+            <TextInput value={productBrand} onChange={setProductBrand} placeholder="Bijv. The Ordinary" />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-text-muted mb-1.5 uppercase tracking-wide">
-              Herhaling
-            </label>
+            <FieldLabel>Herhaling</FieldLabel>
             <div className="flex gap-2">
               {repeatRuleOptions.map((opt) => (
                 <button
                   key={opt.value}
                   type="button"
                   onClick={() => setRepeatRule(opt.value)}
-                  className={`flex-1 py-2 px-2 rounded-lg border text-xs font-medium transition-all ${
-                    repeatRule === opt.value
-                      ? 'border-primary bg-primary/10 text-primary'
-                      : 'border-border bg-surface-elevated text-text-muted'
-                  }`}
+                  className="flex-1 py-2.5 rounded-xl text-[13px] font-medium transition-all focus:outline-none"
+                  style={{
+                    backgroundColor: repeatRule === opt.value ? 'var(--color-primary)' : 'var(--color-fill)',
+                    color: repeatRule === opt.value ? '#fff' : 'var(--color-text)',
+                  }}
                 >
                   {opt.label}
                 </button>
@@ -189,20 +201,18 @@ export default function StepForm({ routineId, step, sortOrder = 0, onClose }: St
 
           {repeatRule === 'specific_days' && (
             <div>
-              <label className="block text-xs font-medium text-text-muted mb-1.5 uppercase tracking-wide">
-                Dagen
-              </label>
-              <div className="flex gap-2">
+              <FieldLabel>Dagen</FieldLabel>
+              <div className="flex gap-1.5">
                 {dayNames.map((day, i) => (
                   <button
                     key={i}
                     type="button"
                     onClick={() => toggleDay(i)}
-                    className={`flex-1 py-2 rounded-lg border text-xs font-medium transition-all ${
-                      repeatDays.includes(i)
-                        ? 'border-primary bg-primary/10 text-primary'
-                        : 'border-border bg-surface-elevated text-text-muted'
-                    }`}
+                    className="flex-1 py-2.5 rounded-xl text-[13px] font-medium transition-all focus:outline-none"
+                    style={{
+                      backgroundColor: repeatDays.includes(i) ? 'var(--color-primary)' : 'var(--color-fill)',
+                      color: repeatDays.includes(i) ? '#fff' : 'var(--color-text)',
+                    }}
                   >
                     {day}
                   </button>
@@ -213,61 +223,62 @@ export default function StepForm({ routineId, step, sortOrder = 0, onClose }: St
 
           {repeatRule === 'x_per_week' && (
             <div>
-              <label className="block text-xs font-medium text-text-muted mb-1.5 uppercase tracking-wide">
-                Keer per week
-              </label>
+              <FieldLabel>Keer per week</FieldLabel>
               <input
                 type="number"
                 min={1}
                 max={7}
                 value={repeatCount}
                 onChange={(e) => setRepeatCount(Number(e.target.value))}
-                className="w-24 bg-surface-elevated border border-border rounded-xl px-4 py-2.5 text-sm text-text focus:outline-none focus:border-primary"
+                className="w-24 rounded-xl px-4 py-3 text-[15px] focus:outline-none"
+                style={{ backgroundColor: 'var(--color-fill)', color: 'var(--color-text)', border: 'none' }}
               />
             </div>
           )}
 
-          <div className="flex items-center justify-between py-1">
+          <div
+            className="flex items-center justify-between py-3 px-4 rounded-xl"
+            style={{ backgroundColor: 'var(--color-fill)' }}
+          >
             <div>
-              <p className="text-sm font-medium text-text">Opbouwfase</p>
-              <p className="text-xs text-text-muted">Bijv. retinol schema</p>
+              <p className="text-[15px] font-medium" style={{ color: 'var(--color-text)' }}>Opbouwfase</p>
+              <p className="text-[13px]" style={{ color: 'var(--color-text-muted)' }}>Bijv. retinol schema</p>
             </div>
             <Toggle checked={phaseEnabled} onChange={setPhaseEnabled} />
           </div>
 
           {phaseEnabled && (
             <div>
-              <label className="block text-xs font-medium text-text-muted mb-1.5 uppercase tracking-wide">
-                Startdatum opbouwfase
-              </label>
+              <FieldLabel>Startdatum opbouwfase</FieldLabel>
               <input
                 type="date"
                 value={phaseStartDate}
                 onChange={(e) => setPhaseStartDate(e.target.value)}
-                className="w-full bg-surface-elevated border border-border rounded-xl px-4 py-2.5 text-sm text-text focus:outline-none focus:border-primary"
+                className="w-full rounded-xl px-4 py-3 text-[15px] focus:outline-none"
+                style={{ backgroundColor: 'var(--color-fill)', color: 'var(--color-text)', border: 'none' }}
               />
             </div>
           )}
 
-          <div className="flex items-center gap-3">
-            <Toggle checked={isActive} onChange={setIsActive} label="Actief" />
+          <div
+            className="flex items-center justify-between py-3 px-4 rounded-xl"
+            style={{ backgroundColor: 'var(--color-fill)' }}
+          >
+            <p className="text-[15px] font-medium" style={{ color: 'var(--color-text)' }}>Actief</p>
+            <Toggle checked={isActive} onChange={setIsActive} />
           </div>
 
-          <div className="flex gap-3 pt-2">
-            <Button type="submit" loading={isPending} fullWidth>
-              {isEditing ? 'Opslaan' : 'Toevoegen'}
-            </Button>
-            {isEditing && (
-              <Button
-                type="button"
-                variant="danger"
-                onClick={handleDelete}
-                loading={deleteStep.isPending}
-              >
-                <X size={16} />
-              </Button>
-            )}
-          </div>
+          {isEditing && (
+            <button
+              type="button"
+              onClick={handleDelete}
+              disabled={deleteStep.isPending}
+              className="w-full py-3.5 rounded-xl text-[15px] font-medium focus:outline-none active:opacity-60 transition-opacity disabled:opacity-40"
+              style={{ backgroundColor: 'rgba(255, 59, 48, 0.1)', color: 'var(--color-danger)' }}
+            >
+              Stap verwijderen
+            </button>
+          )}
         </form>
       </div>
     </div>
