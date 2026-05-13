@@ -3,6 +3,23 @@ import { createClient } from '@/lib/supabase/client'
 export async function seedUserData(userId: string) {
   const supabase = createClient()
 
+  // Create Skincare routine group
+  const { data: skincareGroup, error: groupError } = await supabase
+    .from('routine_groups')
+    .insert({
+      user_id: userId,
+      name: 'Skincare',
+      description: 'Dagelijkse skincare routine',
+      sort_order: 0,
+    })
+    .select()
+    .single()
+
+  if (groupError || !skincareGroup) {
+    console.error('Error creating skincare group:', groupError)
+    return
+  }
+
   // Create Morning Routine
   const { data: morningRoutine, error: morningError } = await supabase
     .from('routines')
@@ -13,6 +30,7 @@ export async function seedUserData(userId: string) {
       time_of_day: 'morning',
       is_active: true,
       sort_order: 0,
+      group_id: skincareGroup.id,
       notes: 'Vitamine C altijd op droge huid aanbrengen.\nSPF is de belangrijkste anti-aging stap — ook binnen en in de winter.\nVolgorde is belangrijk: reinigen → vitamine C → moisturizer → SPF.',
     })
     .select()
@@ -89,6 +107,7 @@ export async function seedUserData(userId: string) {
       time_of_day: 'evening',
       is_active: true,
       sort_order: 1,
+      group_id: skincareGroup.id,
       notes: 'Retinol nooit combineren met vitamine C.\nEerste 2 weken geen retinol — huid eerst laten wennen aan de basis.\nNa 1 maand opbouwen van 1x naar 2x per week.\nCastor oil werkt pas na 4–8 weken.\nBij irritatie van retinol: gebruik elke andere avond.',
     })
     .select()
@@ -196,6 +215,7 @@ export async function seedUserData(userId: string) {
       time_of_day: 'free',
       is_active: true,
       sort_order: 2,
+      group_id: skincareGroup.id,
     })
     .select()
     .single()
@@ -225,6 +245,7 @@ export async function seedUserData(userId: string) {
       time_of_day: 'free',
       is_active: true,
       sort_order: 3,
+      group_id: skincareGroup.id,
     })
     .select()
     .single()

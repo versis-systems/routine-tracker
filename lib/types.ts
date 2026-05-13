@@ -25,6 +25,18 @@ export interface ExpectedResult {
   timeframe: string
 }
 
+export interface RoutineGroup {
+  id: string
+  user_id: string
+  name: string
+  description: string | null
+  is_active: boolean
+  sort_order: number
+  created_at: string
+  updated_at: string
+  routines?: (Routine & { steps: Step[] })[]
+}
+
 export interface Routine {
   id: string
   user_id: string
@@ -34,6 +46,7 @@ export interface Routine {
   is_active: boolean
   sort_order: number
   notes: string | null
+  group_id: string | null
   created_at: string
   updated_at: string
   steps?: Step[]

@@ -52,6 +52,7 @@ export default function RoutineForm({ routine, onSuccess }: RoutineFormProps) {
         time_of_day: timeOfDay,
         is_active: isActive,
         sort_order: 0,
+        group_id: null,
       })
     }
 

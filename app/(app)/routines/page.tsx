@@ -1,50 +1,66 @@
 'use client'
 
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { Plus, ChevronRight, Moon, Sun, Sunset, Star } from 'lucide-react'
-import { useRoutines } from '@/lib/hooks/useRoutines'
-import { Routine } from '@/lib/types'
+import { Plus, ChevronRight } from 'lucide-react'
+import { useRoutineGroups } from '@/lib/hooks/useRoutines'
+import { RoutineGroup, Routine, Step } from '@/lib/types'
 import ImportRoutineButton from '@/components/ui/ImportRoutineButton'
 
-const timeIcons: Record<string, React.ElementType> = {
-  morning: Sun,
-  afternoon: Sunset,
-  evening: Moon,
-  free: Star,
+const timeConfig: Record<string, { label: string; icon: string }> = {
+  morning: { label: 'Ochtend', icon: '🌅' },
+  afternoon: { label: 'Middag', icon: '☀️' },
+  evening: { label: 'Avond', icon: '🌙' },
+  free: { label: 'Extra', icon: '✨' },
 }
 
-const timeLabels: Record<string, string> = {
-  morning: 'Ochtend',
-  afternoon: 'Middag',
-  evening: 'Avond',
-  free: 'Vrij',
-}
-
-function RoutineItem({ routine }: { routine: Routine & { steps: any[] } }) {
-  const Icon = timeIcons[routine.time_of_day] || Star
-  const activeStepCount = routine.steps?.filter((s) => s.is_active)?.length ?? 0
+function GroupCard({ group }: { group: RoutineGroup }) {
+  const router = useRouter()
+  const routines = (group.routines ?? []) as (Routine & { steps: Step[] })[]
 
   return (
-    <Link href={`/routines/${routine.id}`}>
-      <div className="flex items-center gap-3 p-4 bg-surface rounded-2xl border border-border hover:border-primary/50 transition-all active:scale-98">
-        <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center flex-shrink-0">
-          <Icon size={18} className="text-primary" />
-        </div>
+    <div
+      className="bg-surface rounded-2xl border border-border overflow-hidden cursor-pointer hover:border-primary/50 transition-all active:scale-98"
+      onClick={() => router.push(`/routines/${group.id}`)}
+    >
+      {/* Group header */}
+      <div className="flex items-center justify-between p-4 pb-3">
         <div className="flex-1 min-w-0">
-          <p className="font-medium text-text truncate">{routine.name}</p>
-          <p className="text-xs text-text-muted">
-            {timeLabels[routine.time_of_day]} · {activeStepCount} stap{activeStepCount !== 1 ? 'pen' : ''}
-          </p>
+          <p className="font-semibold text-text text-base">{group.name}</p>
+          {group.description && (
+            <p className="text-xs text-text-muted mt-0.5 truncate">{group.description}</p>
+          )}
         </div>
-        <ChevronRight size={16} className="text-text-muted flex-shrink-0" />
+        <ChevronRight size={18} className="text-text-muted flex-shrink-0 ml-2" />
       </div>
-    </Link>
+
+      {/* Block rows */}
+      {routines.length > 0 && (
+        <div className="border-t border-border divide-y divide-border/50">
+          {routines.map((routine) => {
+            const config = timeConfig[routine.time_of_day] ?? { label: routine.time_of_day, icon: '✨' }
+            const activeStepCount = routine.steps?.filter((s) => s.is_active)?.length ?? 0
+            return (
+              <div key={routine.id} className="flex items-center gap-2.5 px-4 py-2.5">
+                <span className="text-base leading-none">{config.icon}</span>
+                <span className="text-sm text-text-muted flex-1">
+                  {routine.name || config.label}
+                </span>
+                <span className="text-xs text-text-muted">
+                  {activeStepCount} stap{activeStepCount !== 1 ? 'pen' : ''}
+                </span>
+              </div>
+            )
+          })}
+        </div>
+      )}
+    </div>
   )
 }
 
 export default function RoutinesPage() {
-  const { data: routines, isLoading } = useRoutines()
+  const { data: groups, isLoading } = useRoutineGroups()
 
   return (
     <div className="px-4">
@@ -61,19 +77,19 @@ export default function RoutinesPage() {
 
       {isLoading && (
         <div className="space-y-3">
-          {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-16 bg-surface rounded-2xl border border-border animate-pulse" />
+          {[1, 2].map((i) => (
+            <div key={i} className="h-32 bg-surface rounded-2xl border border-border animate-pulse" />
           ))}
         </div>
       )}
 
-      {!isLoading && routines && (
+      {!isLoading && groups && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           className="space-y-3"
         >
-          {routines.length === 0 ? (
+          {groups.length === 0 ? (
             <div className="flex flex-col items-center text-center py-12 gap-4">
               <p className="text-5xl">🌿</p>
               <div>
@@ -86,14 +102,14 @@ export default function RoutinesPage() {
               <p className="text-text-muted text-xs">of gebruik de knop rechtsboven</p>
             </div>
           ) : (
-            routines.map((routine, i) => (
+            groups.map((group, i) => (
               <motion.div
-                key={routine.id}
+                key={group.id}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.05 }}
               >
-                <RoutineItem routine={routine} />
+                <GroupCard group={group} />
               </motion.div>
             ))
           )}

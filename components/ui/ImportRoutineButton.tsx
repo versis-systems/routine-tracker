@@ -19,6 +19,7 @@ export default function ImportRoutineButton() {
       if (!user) throw new Error('Not authenticated')
       await seedUserData(user.id)
       await queryClient.invalidateQueries({ queryKey: ['routines'] })
+      await queryClient.invalidateQueries({ queryKey: ['routine-groups'] })
       setStatus('done')
     } catch (e) {
       console.error('Import error:', e)

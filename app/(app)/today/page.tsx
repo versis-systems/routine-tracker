@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { startOfDay } from 'date-fns'
-import { useRoutines } from '@/lib/hooks/useRoutines'
+import { useRoutineGroups } from '@/lib/hooks/useRoutines'
 import { useCompletions, useToggleCompletion } from '@/lib/hooks/useCompletions'
 import { isStepActiveToday } from '@/lib/utils/phaseUtils'
 import DaySelector from '@/components/dashboard/DaySelector'
@@ -11,10 +11,11 @@ import RoutineCard from '@/components/dashboard/RoutineCard'
 import ThemeToggle from '@/components/ui/ThemeToggle'
 import ProgressBar from '@/components/ui/ProgressBar'
 import ImportRoutineButton from '@/components/ui/ImportRoutineButton'
+import { Routine, Step } from '@/lib/types'
 
 export default function TodayPage() {
   const [selectedDate, setSelectedDate] = useState(startOfDay(new Date()))
-  const { data: routines, isLoading } = useRoutines()
+  const { data: groups, isLoading } = useRoutineGroups()
   const { data: completions = [] } = useCompletions(selectedDate)
   const toggleCompletion = useToggleCompletion()
 
@@ -22,15 +23,18 @@ export default function TodayPage() {
     toggleCompletion.mutate({ stepId, date: selectedDate, isCompleted })
   }
 
-  // Calculate overall progress
-  const allActiveSteps =
-    routines?.flatMap((r) =>
-      r.steps.filter((s) => isStepActiveToday(s, selectedDate))
-    ) ?? []
+  // Flatten all routines across all groups for progress calculation
+  const allRoutines = groups?.flatMap((g) => (g.routines ?? []) as (Routine & { steps: Step[] })[]) ?? []
+  const allActiveSteps = allRoutines.flatMap((r) =>
+    r.steps.filter((s) => isStepActiveToday(s, selectedDate))
+  )
   const completedStepIds = new Set(completions.map((c) => c.step_id))
   const completedCount = allActiveSteps.filter((s) => completedStepIds.has(s.id)).length
   const totalCount = allActiveSteps.length
   const overallProgress = totalCount > 0 ? (completedCount / totalCount) * 100 : 0
+
+  // Only show group headers when there are multiple groups
+  const showGroupHeaders = (groups?.length ?? 0) > 1
 
   return (
     <div className="px-4 pt-safe">
@@ -76,11 +80,11 @@ export default function TodayPage() {
         </div>
       )}
 
-      {/* Routines */}
-      {!isLoading && routines && (
+      {/* Groups + routines */}
+      {!isLoading && groups && (
         <AnimatePresence>
           <div className="space-y-4">
-            {routines.length === 0 ? (
+            {groups.length === 0 ? (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -96,21 +100,49 @@ export default function TodayPage() {
                 <ImportRoutineButton />
               </motion.div>
             ) : (
-              routines.map((routine, index) => (
-                <motion.div
-                  key={routine.id}
-                  initial={{ opacity: 0, y: 16 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.07 }}
-                >
-                  <RoutineCard
-                    routine={routine}
-                    completions={completions}
-                    date={selectedDate}
-                    onToggleStep={handleToggleStep}
-                  />
-                </motion.div>
-              ))
+              groups.map((group, groupIndex) => {
+                const routines = (group.routines ?? []) as (Routine & { steps: Step[] })[]
+                // Filter to routines that have at least 1 active step today
+                const activeRoutines = routines.filter((r) =>
+                  r.steps.some((s) => isStepActiveToday(s, selectedDate))
+                )
+                if (activeRoutines.length === 0) return null
+
+                return (
+                  <motion.div
+                    key={group.id}
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: groupIndex * 0.07 }}
+                    className="space-y-3"
+                  >
+                    {showGroupHeaders && (
+                      <div className="flex items-center gap-3 mt-2">
+                        <div className="h-px flex-1 bg-border" />
+                        <span className="text-xs font-semibold text-text-muted uppercase tracking-wide">
+                          {group.name}
+                        </span>
+                        <div className="h-px flex-1 bg-border" />
+                      </div>
+                    )}
+                    {activeRoutines.map((routine, routineIndex) => (
+                      <motion.div
+                        key={routine.id}
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: groupIndex * 0.07 + routineIndex * 0.04 }}
+                      >
+                        <RoutineCard
+                          routine={routine}
+                          completions={completions}
+                          date={selectedDate}
+                          onToggleStep={handleToggleStep}
+                        />
+                      </motion.div>
+                    ))}
+                  </motion.div>
+                )
+              })
             )}
           </div>
         </AnimatePresence>

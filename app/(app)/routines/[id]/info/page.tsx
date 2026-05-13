@@ -6,6 +6,7 @@ import { ArrowLeft, Plus, Trash2, Save } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { RoutineInfo, ExpectedResult, ProductInfo } from '@/lib/types'
+import { useRoutineGroup } from '@/lib/hooks/useRoutines'
 import Button from '@/components/ui/Button'
 import Card from '@/components/ui/Card'
 
@@ -15,31 +16,38 @@ interface PageProps {
 
 const supabase = createClient()
 
-function useRoutineInfo(routineId: string) {
+// params.id is a group id — load info for the first routine in the group
+function useGroupRoutineInfo(groupId: string) {
+  const { data: group } = useRoutineGroup(groupId)
+  const firstRoutineId = group?.routines?.[0]?.id ?? null
+
   return useQuery({
-    queryKey: ['routine-info', routineId],
+    queryKey: ['routine-info', 'group', groupId],
     queryFn: async () => {
+      if (!firstRoutineId) return null
       const { data, error } = await supabase
         .from('routine_info')
         .select('*')
-        .eq('routine_id', routineId)
+        .eq('routine_id', firstRoutineId)
         .maybeSingle()
-
       if (error) throw error
-      return data as RoutineInfo | null
+      return { info: data as RoutineInfo | null, routineId: firstRoutineId }
     },
+    enabled: !!firstRoutineId,
   })
 }
 
 export default function RoutineInfoPage({ params }: PageProps) {
   const router = useRouter()
   const queryClient = useQueryClient()
-  const { data: info, isLoading } = useRoutineInfo(params.id)
+  const { data: payload, isLoading } = useGroupRoutineInfo(params.id)
+  const info = payload?.info ?? null
+  const routineId = payload?.routineId ?? null
 
-  const [results, setResults] = useState<ExpectedResult[]>(info?.expected_results ?? [])
-  const [rules, setRules] = useState<string[]>(info?.rules ?? [])
-  const [products, setProducts] = useState<ProductInfo[]>(info?.products ?? [])
-  const [freeText, setFreeText] = useState(info?.free_text ?? '')
+  const [results, setResults] = useState<ExpectedResult[]>([])
+  const [rules, setRules] = useState<string[]>([])
+  const [products, setProducts] = useState<ProductInfo[]>([])
+  const [freeText, setFreeText] = useState('')
   const [initialized, setInitialized] = useState(false)
 
   if (info && !initialized) {
@@ -52,8 +60,9 @@ export default function RoutineInfoPage({ params }: PageProps) {
 
   const saveMutation = useMutation({
     mutationFn: async () => {
+      if (!routineId) throw new Error('No routine found')
       const payload = {
-        routine_id: params.id,
+        routine_id: routineId,
         expected_results: results,
         rules,
         products,
@@ -73,15 +82,13 @@ export default function RoutineInfoPage({ params }: PageProps) {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['routine-info', params.id] })
+      queryClient.invalidateQueries({ queryKey: ['routine-info', 'group', params.id] })
       router.back()
     },
   })
 
-  const addResult = () =>
-    setResults([...results, { label: '', timeframe: '' }])
-  const removeResult = (i: number) =>
-    setResults(results.filter((_, idx) => idx !== i))
+  const addResult = () => setResults([...results, { label: '', timeframe: '' }])
+  const removeResult = (i: number) => setResults(results.filter((_, idx) => idx !== i))
   const updateResult = (i: number, field: keyof ExpectedResult, value: string) =>
     setResults(results.map((r, idx) => (idx === i ? { ...r, [field]: value } : r)))
 
@@ -92,8 +99,7 @@ export default function RoutineInfoPage({ params }: PageProps) {
 
   const addProduct = () =>
     setProducts([...products, { name: '', brand: '', when: 'morning', owned: true }])
-  const removeProduct = (i: number) =>
-    setProducts(products.filter((_, idx) => idx !== i))
+  const removeProduct = (i: number) => setProducts(products.filter((_, idx) => idx !== i))
   const updateProduct = (i: number, field: keyof ProductInfo, value: string | boolean) =>
     setProducts(products.map((p, idx) => (idx === i ? { ...p, [field]: value } : p)))
 

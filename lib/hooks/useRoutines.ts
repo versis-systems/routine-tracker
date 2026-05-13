@@ -2,9 +2,96 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@/lib/supabase/client'
-import { Routine, Step } from '@/lib/types'
+import { Routine, RoutineGroup, Step } from '@/lib/types'
 
 const supabase = createClient()
+
+export function useRoutineGroups() {
+  return useQuery({
+    queryKey: ['routine-groups'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('routine_groups')
+        .select(`
+          *,
+          routines (
+            *,
+            steps (*)
+          )
+        `)
+        .eq('is_active', true)
+        .order('sort_order', { ascending: true })
+        .order('sort_order', { ascending: true, foreignTable: 'routines' })
+        .order('sort_order', { ascending: true, foreignTable: 'steps' })
+      if (error) throw error
+      return data as RoutineGroup[]
+    },
+  })
+}
+
+export function useRoutineGroup(id: string) {
+  return useQuery({
+    queryKey: ['routine-groups', id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('routine_groups')
+        .select(`*, routines(*, steps(*))`)
+        .eq('id', id)
+        .order('sort_order', { ascending: true, foreignTable: 'routines' })
+        .order('sort_order', { ascending: true, foreignTable: 'steps' })
+        .single()
+      if (error) throw error
+      return data as RoutineGroup
+    },
+    enabled: !!id,
+  })
+}
+
+export function useCreateRoutineGroup() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (group: { name: string; description?: string }) => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('Not authenticated')
+      const { data, error } = await supabase
+        .from('routine_groups')
+        .insert({ ...group, user_id: user.id })
+        .select().single()
+      if (error) throw error
+      return data as RoutineGroup
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['routine-groups'] }),
+  })
+}
+
+export function useUpdateRoutineGroup() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ id, ...updates }: Partial<RoutineGroup> & { id: string }) => {
+      const { data, error } = await supabase
+        .from('routine_groups')
+        .update({ ...updates, updated_at: new Date().toISOString() })
+        .eq('id', id).select().single()
+      if (error) throw error
+      return data
+    },
+    onSuccess: (_, v) => {
+      queryClient.invalidateQueries({ queryKey: ['routine-groups'] })
+      queryClient.invalidateQueries({ queryKey: ['routine-groups', v.id] })
+    },
+  })
+}
+
+export function useDeleteRoutineGroup() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from('routine_groups').delete().eq('id', id)
+      if (error) throw error
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['routine-groups'] }),
+  })
+}
 
 export function useRoutines() {
   return useQuery({
@@ -66,6 +153,7 @@ export function useCreateRoutine() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['routines'] })
+      queryClient.invalidateQueries({ queryKey: ['routine-groups'] })
     },
   })
 }
@@ -88,6 +176,7 @@ export function useUpdateRoutine() {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['routines'] })
       queryClient.invalidateQueries({ queryKey: ['routines', variables.id] })
+      queryClient.invalidateQueries({ queryKey: ['routine-groups'] })
     },
   })
 }
@@ -106,6 +195,7 @@ export function useDeleteRoutine() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['routines'] })
+      queryClient.invalidateQueries({ queryKey: ['routine-groups'] })
     },
   })
 }
@@ -127,6 +217,7 @@ export function useCreateStep() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['routines', data.routine_id] })
       queryClient.invalidateQueries({ queryKey: ['routines'] })
+      queryClient.invalidateQueries({ queryKey: ['routine-groups'] })
     },
   })
 }
@@ -149,6 +240,7 @@ export function useUpdateStep() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['routines', data.routine_id] })
       queryClient.invalidateQueries({ queryKey: ['routines'] })
+      queryClient.invalidateQueries({ queryKey: ['routine-groups'] })
     },
   })
 }
@@ -169,6 +261,7 @@ export function useDeleteStep() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['routines', data.routineId] })
       queryClient.invalidateQueries({ queryKey: ['routines'] })
+      queryClient.invalidateQueries({ queryKey: ['routine-groups'] })
     },
   })
 }
@@ -185,6 +278,7 @@ export function useReorderSteps() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['routines'] })
+      queryClient.invalidateQueries({ queryKey: ['routine-groups'] })
     },
   })
 }

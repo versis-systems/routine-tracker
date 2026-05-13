@@ -3,7 +3,19 @@
 -- Run this in the Supabase SQL Editor
 -- ============================================
 
--- Routines table
+-- Routine groups table (top-level container, e.g. "Skincare", "Workout")
+CREATE TABLE IF NOT EXISTS public.routine_groups (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id uuid REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+  name text NOT NULL,
+  description text,
+  is_active boolean DEFAULT true,
+  sort_order integer DEFAULT 0,
+  created_at timestamptz DEFAULT now(),
+  updated_at timestamptz DEFAULT now()
+);
+
+-- Routines table (blocks: Morning, Evening, etc.)
 CREATE TABLE IF NOT EXISTS public.routines (
   id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id uuid REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
@@ -13,6 +25,7 @@ CREATE TABLE IF NOT EXISTS public.routines (
   is_active boolean DEFAULT true,
   sort_order integer DEFAULT 0,
   notes text,
+  group_id uuid REFERENCES public.routine_groups(id) ON DELETE CASCADE,
   created_at timestamptz DEFAULT now(),
   updated_at timestamptz DEFAULT now()
 );
@@ -73,6 +86,7 @@ CREATE TABLE IF NOT EXISTS public.routine_info (
 -- Enable Row Level Security
 -- ============================================
 
+ALTER TABLE public.routine_groups ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.routines ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.steps ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.completions ENABLE ROW LEVEL SECURITY;
@@ -82,6 +96,13 @@ ALTER TABLE public.routine_info ENABLE ROW LEVEL SECURITY;
 -- ============================================
 -- RLS Policies
 -- ============================================
+
+-- Routine groups: users can only access their own groups
+DROP POLICY IF EXISTS "Users can manage own routine groups" ON public.routine_groups;
+CREATE POLICY "Users can manage own routine groups"
+  ON public.routine_groups
+  FOR ALL
+  USING (auth.uid() = user_id);
 
 -- Routines: users can only access their own routines
 DROP POLICY IF EXISTS "Users can manage own routines" ON public.routines;
@@ -132,7 +153,9 @@ CREATE POLICY "Users can manage own routine info"
 -- Indexes for performance
 -- ============================================
 
+CREATE INDEX IF NOT EXISTS idx_routine_groups_user_id ON public.routine_groups(user_id);
 CREATE INDEX IF NOT EXISTS idx_routines_user_id ON public.routines(user_id);
+CREATE INDEX IF NOT EXISTS idx_routines_group_id ON public.routines(group_id);
 CREATE INDEX IF NOT EXISTS idx_steps_routine_id ON public.steps(routine_id);
 CREATE INDEX IF NOT EXISTS idx_completions_user_date ON public.completions(user_id, completed_date);
 CREATE INDEX IF NOT EXISTS idx_completions_step_id ON public.completions(step_id);
