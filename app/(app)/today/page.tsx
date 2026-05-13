@@ -45,13 +45,7 @@ export default function TodayPage() {
         style={{ paddingTop: 'env(safe-area-inset-top, 44px)' }}
       >
         {/* Title bar */}
-        <div className="flex items-center justify-between px-4 pt-2 pb-1">
-          <h1
-            className="text-[28px] font-bold tracking-tight"
-            style={{ color: 'var(--color-text)', lineHeight: 1 }}
-          >
-            Vandaag
-          </h1>
+        <div className="flex items-center justify-end px-4 pt-2 pb-1">
           <ThemeToggle />
         </div>
 
