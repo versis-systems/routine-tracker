@@ -10,6 +10,7 @@ import DaySelector from '@/components/dashboard/DaySelector'
 import RoutineCard from '@/components/dashboard/RoutineCard'
 import ThemeToggle from '@/components/ui/ThemeToggle'
 import ProgressBar from '@/components/ui/ProgressBar'
+import ImportRoutineButton from '@/components/ui/ImportRoutineButton'
 
 export default function TodayPage() {
   const [selectedDate, setSelectedDate] = useState(startOfDay(new Date()))
@@ -83,13 +84,16 @@ export default function TodayPage() {
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="text-center py-16"
+                className="flex flex-col items-center text-center py-12 gap-4"
               >
-                <p className="text-4xl mb-3">✨</p>
-                <p className="text-text font-medium">Geen routines gevonden</p>
-                <p className="text-text-muted text-sm mt-1">
-                  Ga naar Routines om er een aan te maken
-                </p>
+                <p className="text-5xl">✨</p>
+                <div>
+                  <p className="text-text font-semibold text-base">Welkom! Je hebt nog geen routines.</p>
+                  <p className="text-text-muted text-sm mt-1">
+                    Importeer de skincare routine als startpunt, of maak er zelf een aan via Routines.
+                  </p>
+                </div>
+                <ImportRoutineButton />
               </motion.div>
             ) : (
               routines.map((routine, index) => (

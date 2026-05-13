@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import { Plus, ChevronRight, Moon, Sun, Sunset, Star } from 'lucide-react'
 import { useRoutines } from '@/lib/hooks/useRoutines'
 import { Routine } from '@/lib/types'
+import ImportRoutineButton from '@/components/ui/ImportRoutineButton'
 
 const timeIcons: Record<string, React.ElementType> = {
   morning: Sun,
@@ -73,10 +74,16 @@ export default function RoutinesPage() {
           className="space-y-3"
         >
           {routines.length === 0 ? (
-            <div className="text-center py-16">
-              <p className="text-4xl mb-3">📋</p>
-              <p className="text-text font-medium">Geen routines</p>
-              <p className="text-text-muted text-sm mt-1">Maak je eerste routine aan</p>
+            <div className="flex flex-col items-center text-center py-12 gap-4">
+              <p className="text-5xl">🌿</p>
+              <div>
+                <p className="text-text font-semibold text-base">Geen routines</p>
+                <p className="text-text-muted text-sm mt-1">
+                  Start met de vooraf ingevulde skincare routine, of maak zelf een nieuwe aan.
+                </p>
+              </div>
+              <ImportRoutineButton />
+              <p className="text-text-muted text-xs">of gebruik de knop rechtsboven</p>
             </div>
           ) : (
             routines.map((routine, i) => (
