@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   DndContext,
   closestCenter,
@@ -96,6 +96,10 @@ export default function StepList({ steps: initialSteps, routineId }: StepListPro
   const [showAddForm, setShowAddForm] = useState(false)
   const reorderSteps = useReorderSteps()
 
+  useEffect(() => {
+    setSteps(initialSteps)
+  }, [initialSteps])
+
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
@@ -117,11 +121,6 @@ export default function StepList({ steps: initialSteps, routineId }: StepListPro
     )
   }
 
-  // Keep local state in sync with props
-  if (initialSteps.length !== steps.length ||
-      initialSteps.some((s, i) => s.id !== steps[i]?.id)) {
-    setSteps(initialSteps)
-  }
 
   return (
     <div className="space-y-2">

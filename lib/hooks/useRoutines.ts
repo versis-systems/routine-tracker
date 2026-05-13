@@ -6,25 +6,28 @@ import { Routine, RoutineGroup, Step } from '@/lib/types'
 
 const supabase = createClient()
 
+function sortGroup(group: RoutineGroup): RoutineGroup {
+  const routines = [...(group.routines ?? [])].sort((a, b) => a.sort_order - b.sort_order)
+  return {
+    ...group,
+    routines: routines.map((r) => ({
+      ...r,
+      steps: [...(r.steps ?? [])].sort((a, b) => a.sort_order - b.sort_order),
+    })),
+  }
+}
+
 export function useRoutineGroups() {
   return useQuery({
     queryKey: ['routine-groups'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('routine_groups')
-        .select(`
-          *,
-          routines (
-            *,
-            steps (*)
-          )
-        `)
+        .select('*, routines(*, steps(*))')
         .eq('is_active', true)
         .order('sort_order', { ascending: true })
-        .order('sort_order', { ascending: true, foreignTable: 'routines' })
-        .order('sort_order', { ascending: true, foreignTable: 'steps' })
       if (error) throw error
-      return data as RoutineGroup[]
+      return (data as RoutineGroup[]).map(sortGroup)
     },
   })
 }
@@ -35,13 +38,11 @@ export function useRoutineGroup(id: string) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('routine_groups')
-        .select(`*, routines(*, steps(*))`)
+        .select('*, routines(*, steps(*))')
         .eq('id', id)
-        .order('sort_order', { ascending: true, foreignTable: 'routines' })
-        .order('sort_order', { ascending: true, foreignTable: 'steps' })
         .single()
       if (error) throw error
-      return data as RoutineGroup
+      return sortGroup(data as RoutineGroup)
     },
     enabled: !!id,
   })
