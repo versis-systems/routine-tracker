@@ -31,6 +31,8 @@ export async function seedUserData(userId: string) {
       is_active: true,
       sort_order: 0,
       group_id: skincareGroup.id,
+      start_time: '07:00',
+      end_time: '07:15',
       notes: 'Vitamine C altijd op droge huid aanbrengen.\nSPF is de belangrijkste anti-aging stap — ook binnen en in de winter.\nVolgorde is belangrijk: reinigen → vitamine C → moisturizer → SPF.',
     })
     .select()
@@ -108,6 +110,8 @@ export async function seedUserData(userId: string) {
       is_active: true,
       sort_order: 1,
       group_id: skincareGroup.id,
+      start_time: '21:00',
+      end_time: '21:15',
       notes: 'Retinol nooit combineren met vitamine C.\nEerste 2 weken geen retinol — huid eerst laten wennen aan de basis.\nNa 1 maand opbouwen van 1x naar 2x per week.\nCastor oil werkt pas na 4–8 weken.\nBij irritatie van retinol: gebruik elke andere avond.',
     })
     .select()

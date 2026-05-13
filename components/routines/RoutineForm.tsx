@@ -53,6 +53,8 @@ export default function RoutineForm({ routine, onSuccess }: RoutineFormProps) {
         is_active: isActive,
         sort_order: 0,
         group_id: null,
+        start_time: null,
+        end_time: null,
       })
     }
 

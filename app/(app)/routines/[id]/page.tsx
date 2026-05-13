@@ -39,6 +39,8 @@ function AddBlockModal({ groupId, onClose }: AddBlockModalProps) {
   const createRoutine = useCreateRoutine()
   const [selectedTime, setSelectedTime] = useState<TimeOfDay>('morning')
   const [customName, setCustomName] = useState('')
+  const [startTime, setStartTime] = useState('')
+  const [endTime, setEndTime] = useState('')
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -51,6 +53,8 @@ function AddBlockModal({ groupId, onClose }: AddBlockModalProps) {
       notes: null,
       is_active: true,
       sort_order: 0,
+      start_time: startTime || null,
+      end_time: endTime || null,
     })
     onClose()
   }
@@ -112,12 +116,30 @@ function AddBlockModal({ groupId, onClose }: AddBlockModalProps) {
               onChange={(e) => setCustomName(e.target.value)}
               placeholder={timeConfig[selectedTime].label}
               className="w-full rounded-xl px-4 py-3 text-[15px] focus:outline-none"
-              style={{
-                backgroundColor: 'var(--color-fill)',
-                color: 'var(--color-text)',
-                border: 'none',
-              }}
+              style={{ backgroundColor: 'var(--color-fill)', color: 'var(--color-text)', border: 'none' }}
             />
+          </div>
+          <div>
+            <p className="text-[13px] font-semibold uppercase tracking-wide mb-2" style={{ color: 'var(--color-text-muted)' }}>
+              Tijdslot (optioneel)
+            </p>
+            <div className="flex gap-2 items-center">
+              <input
+                type="time"
+                value={startTime}
+                onChange={(e) => setStartTime(e.target.value)}
+                className="flex-1 rounded-xl px-4 py-3 text-[15px] focus:outline-none"
+                style={{ backgroundColor: 'var(--color-fill)', color: 'var(--color-text)', border: 'none' }}
+              />
+              <span className="text-[15px]" style={{ color: 'var(--color-text-muted)' }}>–</span>
+              <input
+                type="time"
+                value={endTime}
+                onChange={(e) => setEndTime(e.target.value)}
+                className="flex-1 rounded-xl px-4 py-3 text-[15px] focus:outline-none"
+                style={{ backgroundColor: 'var(--color-fill)', color: 'var(--color-text)', border: 'none' }}
+              />
+            </div>
           </div>
           <div className="flex gap-3 pt-1">
             <Button type="button" variant="secondary" onClick={onClose} fullWidth>
@@ -144,6 +166,8 @@ function EditBlockModal({ routine, onClose }: EditBlockModalProps) {
   const updateRoutine = useUpdateRoutine()
   const [selectedTime, setSelectedTime] = useState<TimeOfDay>(routine.time_of_day)
   const [name, setName] = useState(routine.name)
+  const [startTime, setStartTime] = useState(routine.start_time?.slice(0, 5) ?? '')
+  const [endTime, setEndTime] = useState(routine.end_time?.slice(0, 5) ?? '')
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -151,6 +175,8 @@ function EditBlockModal({ routine, onClose }: EditBlockModalProps) {
       id: routine.id,
       time_of_day: selectedTime,
       name: name.trim() || timeConfig[selectedTime].label,
+      start_time: startTime || null,
+      end_time: endTime || null,
     })
     onClose()
   }
@@ -211,6 +237,28 @@ function EditBlockModal({ routine, onClose }: EditBlockModalProps) {
               style={{ backgroundColor: 'var(--color-fill)', color: 'var(--color-text)', border: 'none' }}
             />
           </div>
+          <div>
+            <p className="text-[13px] font-semibold uppercase tracking-wide mb-2" style={{ color: 'var(--color-text-muted)' }}>
+              Tijdslot
+            </p>
+            <div className="flex gap-2 items-center">
+              <input
+                type="time"
+                value={startTime}
+                onChange={(e) => setStartTime(e.target.value)}
+                className="flex-1 rounded-xl px-4 py-3 text-[15px] focus:outline-none"
+                style={{ backgroundColor: 'var(--color-fill)', color: 'var(--color-text)', border: 'none' }}
+              />
+              <span className="text-[15px]" style={{ color: 'var(--color-text-muted)' }}>–</span>
+              <input
+                type="time"
+                value={endTime}
+                onChange={(e) => setEndTime(e.target.value)}
+                className="flex-1 rounded-xl px-4 py-3 text-[15px] focus:outline-none"
+                style={{ backgroundColor: 'var(--color-fill)', color: 'var(--color-text)', border: 'none' }}
+              />
+            </div>
+          </div>
           <div className="flex gap-3 pt-1">
             <Button type="button" variant="secondary" onClick={onClose} fullWidth>
               Annuleren
@@ -253,9 +301,16 @@ function BlockCard({ routine }: BlockCardProps) {
           style={{ borderBottom: '0.5px solid var(--color-separator)' }}
         >
           <span className="text-xl leading-none">{cfg.icon}</span>
-          <span className="text-[17px] font-semibold flex-1" style={{ color: 'var(--color-text)' }}>
-            {routine.name}
-          </span>
+          <div className="flex-1 min-w-0">
+            <span className="text-[17px] font-semibold block" style={{ color: 'var(--color-text)' }}>
+              {routine.name}
+            </span>
+            {routine.start_time && routine.end_time && (
+              <span className="text-[13px]" style={{ color: 'var(--color-text-muted)' }}>
+                {routine.start_time.slice(0,5)} – {routine.end_time.slice(0,5)}
+              </span>
+            )}
+          </div>
           <button
             onClick={() => setShowEdit(true)}
             className="p-2 rounded-full focus:outline-none active:opacity-60 transition-opacity"
