@@ -22,12 +22,12 @@ export default function BottomNav() {
         borderTop: '0.5px solid var(--color-separator)',
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
+        paddingBottom: 'env(safe-area-inset-bottom, 0px)',
       }}
     >
       <div
         className="flex items-center justify-around max-w-lg mx-auto"
         style={{
-          paddingBottom: 'env(safe-area-inset-bottom, 4px)',
           paddingTop: 6,
           paddingLeft: 8,
           paddingRight: 8,
