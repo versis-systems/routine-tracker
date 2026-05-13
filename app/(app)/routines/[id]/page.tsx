@@ -13,267 +13,167 @@ import {
 } from '@/lib/hooks/useRoutines'
 import { Routine, Step, TimeOfDay } from '@/lib/types'
 import StepList from '@/components/routines/StepList'
-import Button from '@/components/ui/Button'
+import TimeSlotPicker from '@/components/ui/TimeSlotPicker'
 
 interface PageProps {
   params: { id: string }
 }
 
-const timeConfig: Record<TimeOfDay, { label: string; icon: string }> = {
-  morning: { label: 'Ochtend', icon: '🌅' },
-  afternoon: { label: 'Middag', icon: '☀️' },
-  evening: { label: 'Avond', icon: '🌙' },
-  free: { label: 'Extra', icon: '✨' },
+// Derive time_of_day from start_time so the calendar colors stay correct
+function deriveTimeOfDay(startTime: string | null): TimeOfDay {
+  if (!startTime) return 'free'
+  const h = parseInt(startTime.split(':')[0])
+  if (h >= 5 && h < 12) return 'morning'
+  if (h >= 12 && h < 17) return 'afternoon'
+  if (h >= 17 && h < 23) return 'evening'
+  return 'free'
 }
 
-const timeOptions: TimeOfDay[] = ['morning', 'afternoon', 'evening', 'free']
+const accentColors: Record<TimeOfDay, string> = {
+  morning:   '#007AFF',
+  afternoon: '#FF9500',
+  evening:   '#5856D6',
+  free:      '#34C759',
+}
 
-// ── Add Block Modal ────────────────────────────────────────────────────────────
+// ── Block Modal (shared add / edit) ──────────────────────────────────────────
 
-interface AddBlockModalProps {
-  groupId: string
+interface BlockModalProps {
+  groupId?: string
+  routine?: Routine
   onClose: () => void
 }
 
-function AddBlockModal({ groupId, onClose }: AddBlockModalProps) {
+function BlockModal({ groupId, routine, onClose }: BlockModalProps) {
   const createRoutine = useCreateRoutine()
-  const [selectedTime, setSelectedTime] = useState<TimeOfDay>('morning')
-  const [customName, setCustomName] = useState('')
-  const [startTime, setStartTime] = useState('')
-  const [endTime, setEndTime] = useState('')
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    const cfg = timeConfig[selectedTime]
-    await createRoutine.mutateAsync({
-      group_id: groupId,
-      time_of_day: selectedTime,
-      name: customName.trim() || cfg.label,
-      description: null,
-      notes: null,
-      is_active: true,
-      sort_order: 0,
-      start_time: startTime || null,
-      end_time: endTime || null,
-    })
-    onClose()
-  }
-
-  return (
-    <div
-      className="fixed inset-0 z-50 flex items-end"
-      style={{ backgroundColor: 'rgba(0,0,0,0.4)' }}
-      onClick={onClose}
-    >
-      <div
-        className="w-full rounded-t-3xl p-6 space-y-5"
-        style={{ backgroundColor: 'var(--color-surface)' }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Drag handle */}
-        <div className="flex justify-center -mt-1">
-          <div className="w-9 h-1 rounded-full" style={{ backgroundColor: 'var(--color-fill)' }} />
-        </div>
-        <h2 className="text-[17px] font-semibold text-center" style={{ color: 'var(--color-text)' }}>
-          Blok toevoegen
-        </h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <p className="text-[13px] font-semibold uppercase tracking-wide mb-2" style={{ color: 'var(--color-text-muted)' }}>
-              Tijdstip
-            </p>
-            <div className="grid grid-cols-2 gap-2">
-              {timeOptions.map((t) => {
-                const cfg = timeConfig[t]
-                return (
-                  <button
-                    key={t}
-                    type="button"
-                    onClick={() => setSelectedTime(t)}
-                    className="py-3 px-3 rounded-xl text-[15px] font-medium transition-all text-left flex items-center gap-2.5 focus:outline-none"
-                    style={{
-                      backgroundColor: selectedTime === t ? 'var(--color-primary)' : 'var(--color-fill)',
-                      color: selectedTime === t ? '#fff' : 'var(--color-text)',
-                    }}
-                  >
-                    <span>{cfg.icon}</span>
-                    <span>{cfg.label}</span>
-                  </button>
-                )
-              })}
-            </div>
-          </div>
-          <div>
-            <label
-              className="block text-[13px] font-semibold uppercase tracking-wide mb-1.5"
-              style={{ color: 'var(--color-text-muted)' }}
-            >
-              Naam (optioneel)
-            </label>
-            <input
-              type="text"
-              value={customName}
-              onChange={(e) => setCustomName(e.target.value)}
-              placeholder={timeConfig[selectedTime].label}
-              className="w-full rounded-xl px-4 py-3 text-[15px] focus:outline-none"
-              style={{ backgroundColor: 'var(--color-fill)', color: 'var(--color-text)', border: 'none' }}
-            />
-          </div>
-          <div>
-            <p className="text-[13px] font-semibold uppercase tracking-wide mb-2" style={{ color: 'var(--color-text-muted)' }}>
-              Tijdslot (optioneel)
-            </p>
-            <div className="flex gap-2 items-center">
-              <input
-                type="time"
-                value={startTime}
-                onChange={(e) => setStartTime(e.target.value)}
-                className="flex-1 rounded-xl px-4 py-3 text-[15px] focus:outline-none"
-                style={{ backgroundColor: 'var(--color-fill)', color: 'var(--color-text)', border: 'none' }}
-              />
-              <span className="text-[15px]" style={{ color: 'var(--color-text-muted)' }}>–</span>
-              <input
-                type="time"
-                value={endTime}
-                onChange={(e) => setEndTime(e.target.value)}
-                className="flex-1 rounded-xl px-4 py-3 text-[15px] focus:outline-none"
-                style={{ backgroundColor: 'var(--color-fill)', color: 'var(--color-text)', border: 'none' }}
-              />
-            </div>
-          </div>
-          <div className="flex gap-3 pt-1">
-            <Button type="button" variant="secondary" onClick={onClose} fullWidth>
-              Annuleren
-            </Button>
-            <Button type="submit" loading={createRoutine.isPending} fullWidth>
-              Toevoegen
-            </Button>
-          </div>
-        </form>
-      </div>
-    </div>
-  )
-}
-
-// ── Edit Block Modal ───────────────────────────────────────────────────────────
-
-interface EditBlockModalProps {
-  routine: Routine
-  onClose: () => void
-}
-
-function EditBlockModal({ routine, onClose }: EditBlockModalProps) {
   const updateRoutine = useUpdateRoutine()
-  const [selectedTime, setSelectedTime] = useState<TimeOfDay>(routine.time_of_day)
-  const [name, setName] = useState(routine.name)
-  const [startTime, setStartTime] = useState(routine.start_time?.slice(0, 5) ?? '')
-  const [endTime, setEndTime] = useState(routine.end_time?.slice(0, 5) ?? '')
+  const isEditing = !!routine
+
+  const [name, setName] = useState(routine?.name ?? '')
+  const [startTime, setStartTime] = useState<string | null>(routine?.start_time?.slice(0, 5) ?? null)
+  const [endTime, setEndTime] = useState<string | null>(routine?.end_time?.slice(0, 5) ?? null)
+
+  const timeOfDay = deriveTimeOfDay(startTime)
+  const accent = accentColors[timeOfDay]
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    await updateRoutine.mutateAsync({
-      id: routine.id,
-      time_of_day: selectedTime,
-      name: name.trim() || timeConfig[selectedTime].label,
-      start_time: startTime || null,
-      end_time: endTime || null,
-    })
+    if (isEditing && routine) {
+      await updateRoutine.mutateAsync({
+        id: routine.id,
+        name: name.trim() || 'Routine',
+        time_of_day: timeOfDay,
+        start_time: startTime,
+        end_time: endTime,
+      })
+    } else if (groupId) {
+      await createRoutine.mutateAsync({
+        group_id: groupId,
+        name: name.trim() || 'Routine',
+        time_of_day: timeOfDay,
+        description: null,
+        notes: null,
+        is_active: true,
+        sort_order: 0,
+        start_time: startTime,
+        end_time: endTime,
+      })
+    }
     onClose()
   }
+
+  const isPending = createRoutine.isPending || updateRoutine.isPending
 
   return (
     <div
       className="fixed inset-0 z-50 flex items-end"
-      style={{ backgroundColor: 'rgba(0,0,0,0.4)' }}
+      style={{ backgroundColor: 'rgba(0,0,0,0.45)' }}
       onClick={onClose}
     >
       <div
-        className="w-full rounded-t-3xl p-6 space-y-5"
-        style={{ backgroundColor: 'var(--color-surface)' }}
+        className="w-full max-w-lg mx-auto rounded-t-3xl flex flex-col"
+        style={{ backgroundColor: 'var(--color-surface)', maxHeight: '88dvh' }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex justify-center -mt-1">
-          <div className="w-9 h-1 rounded-full" style={{ backgroundColor: 'var(--color-fill)' }} />
-        </div>
-        <h2 className="text-[17px] font-semibold text-center" style={{ color: 'var(--color-text)' }}>
-          Blok bewerken
-        </h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <p className="text-[13px] font-semibold uppercase tracking-wide mb-2" style={{ color: 'var(--color-text-muted)' }}>
-              Tijdstip
-            </p>
-            <div className="grid grid-cols-2 gap-2">
-              {timeOptions.map((t) => {
-                const cfg = timeConfig[t]
-                return (
-                  <button
-                    key={t}
-                    type="button"
-                    onClick={() => setSelectedTime(t)}
-                    className="py-3 px-3 rounded-xl text-[15px] font-medium transition-all text-left flex items-center gap-2.5 focus:outline-none"
-                    style={{
-                      backgroundColor: selectedTime === t ? 'var(--color-primary)' : 'var(--color-fill)',
-                      color: selectedTime === t ? '#fff' : 'var(--color-text)',
-                    }}
-                  >
-                    <span>{cfg.icon}</span>
-                    <span>{cfg.label}</span>
-                  </button>
-                )
-              })}
-            </div>
+        {/* Fixed header */}
+        <div className="flex-shrink-0 px-5 pt-3 pb-4">
+          {/* Drag handle */}
+          <div className="flex justify-center mb-3">
+            <div className="w-9 h-1 rounded-full" style={{ backgroundColor: 'var(--color-fill)' }} />
           </div>
-          <div>
-            <label className="block text-[13px] font-semibold uppercase tracking-wide mb-1.5" style={{ color: 'var(--color-text-muted)' }}>
-              Naam
-            </label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder={timeConfig[selectedTime].label}
-              className="w-full rounded-xl px-4 py-3 text-[15px] focus:outline-none"
-              style={{ backgroundColor: 'var(--color-fill)', color: 'var(--color-text)', border: 'none' }}
-            />
-          </div>
-          <div>
-            <p className="text-[13px] font-semibold uppercase tracking-wide mb-2" style={{ color: 'var(--color-text-muted)' }}>
-              Tijdslot
-            </p>
-            <div className="flex gap-2 items-center">
-              <input
-                type="time"
-                value={startTime}
-                onChange={(e) => setStartTime(e.target.value)}
-                className="flex-1 rounded-xl px-4 py-3 text-[15px] focus:outline-none"
-                style={{ backgroundColor: 'var(--color-fill)', color: 'var(--color-text)', border: 'none' }}
-              />
-              <span className="text-[15px]" style={{ color: 'var(--color-text-muted)' }}>–</span>
-              <input
-                type="time"
-                value={endTime}
-                onChange={(e) => setEndTime(e.target.value)}
-                className="flex-1 rounded-xl px-4 py-3 text-[15px] focus:outline-none"
-                style={{ backgroundColor: 'var(--color-fill)', color: 'var(--color-text)', border: 'none' }}
-              />
-            </div>
-          </div>
-          <div className="flex gap-3 pt-1">
-            <Button type="button" variant="secondary" onClick={onClose} fullWidth>
+          {/* Title row */}
+          <div className="flex items-center justify-between">
+            <button
+              type="button"
+              onClick={onClose}
+              className="text-[15px] font-medium focus:outline-none"
+              style={{ color: 'var(--color-primary)' }}
+            >
               Annuleren
-            </Button>
-            <Button type="submit" loading={updateRoutine.isPending} fullWidth>
-              Opslaan
-            </Button>
+            </button>
+            <h2 className="text-[17px] font-semibold" style={{ color: 'var(--color-text)' }}>
+              {isEditing ? 'Blok bewerken' : 'Blok toevoegen'}
+            </h2>
+            <button
+              type="submit"
+              form="block-form"
+              disabled={isPending}
+              className="text-[15px] font-semibold focus:outline-none disabled:opacity-40"
+              style={{ color: accent }}
+            >
+              {isPending ? '…' : isEditing ? 'Opslaan' : 'Voeg toe'}
+            </button>
           </div>
-        </form>
+        </div>
+
+        {/* Scrollable body */}
+        <div className="flex-1 overflow-y-auto px-5 pb-6">
+          <form id="block-form" onSubmit={handleSubmit} className="space-y-5">
+            {/* Name */}
+            <div>
+              <label
+                className="block text-[13px] font-semibold uppercase tracking-wide mb-1.5"
+                style={{ color: 'var(--color-text-muted)' }}
+              >
+                Naam
+              </label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Bijv. Ochtend Routine"
+                className="w-full rounded-xl px-4 py-3 text-[15px] focus:outline-none"
+                style={{ backgroundColor: 'var(--color-fill)', color: 'var(--color-text)', border: 'none' }}
+              />
+            </div>
+
+            {/* Time slot picker */}
+            <div>
+              <p
+                className="text-[13px] font-semibold uppercase tracking-wide mb-2"
+                style={{ color: 'var(--color-text-muted)' }}
+              >
+                Tijdslot
+              </p>
+              <TimeSlotPicker
+                startTime={startTime}
+                endTime={endTime}
+                onChange={(s, e) => { setStartTime(s); setEndTime(e) }}
+                accentColor={accent}
+              />
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   )
 }
 
 // ── Block Card ─────────────────────────────────────────────────────────────────
+
+const timeIcons: Record<TimeOfDay, string> = {
+  morning: '🌅', afternoon: '☀️', evening: '🌙', free: '✨',
+}
 
 interface BlockCardProps {
   routine: Routine & { steps: Step[] }
@@ -282,10 +182,11 @@ interface BlockCardProps {
 function BlockCard({ routine }: BlockCardProps) {
   const deleteRoutine = useDeleteRoutine()
   const [showEdit, setShowEdit] = useState(false)
-  const cfg = timeConfig[routine.time_of_day] ?? { label: routine.time_of_day, icon: '✨' }
+  const icon = timeIcons[routine.time_of_day] ?? '✨'
+  const accent = accentColors[routine.time_of_day] ?? accentColors.free
 
   const handleDelete = async () => {
-    if (!confirm(`Weet je zeker dat je het blok "${routine.name}" wilt verwijderen?`)) return
+    if (!confirm(`Weet je zeker dat je "${routine.name}" wilt verwijderen?`)) return
     await deleteRoutine.mutateAsync(routine.id)
   }
 
@@ -295,25 +196,29 @@ function BlockCard({ routine }: BlockCardProps) {
         className="rounded-2xl overflow-hidden"
         style={{ backgroundColor: 'var(--color-surface)', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}
       >
-        {/* Block header */}
+        {/* Header */}
         <div
-          className="flex items-center gap-3 px-4 py-3.5"
+          className="flex items-center gap-3 px-4 py-3"
           style={{ borderBottom: '0.5px solid var(--color-separator)' }}
         >
-          <span className="text-xl leading-none">{cfg.icon}</span>
+          <span className="text-xl leading-none">{icon}</span>
           <div className="flex-1 min-w-0">
-            <span className="text-[17px] font-semibold block" style={{ color: 'var(--color-text)' }}>
+            <span className="text-[17px] font-semibold block leading-tight" style={{ color: 'var(--color-text)' }}>
               {routine.name}
             </span>
-            {routine.start_time && routine.end_time && (
+            {routine.start_time && routine.end_time ? (
+              <span className="text-[13px] font-medium" style={{ color: accent }}>
+                {routine.start_time.slice(0, 5)} – {routine.end_time.slice(0, 5)}
+              </span>
+            ) : (
               <span className="text-[13px]" style={{ color: 'var(--color-text-muted)' }}>
-                {routine.start_time.slice(0,5)} – {routine.end_time.slice(0,5)}
+                Geen tijdslot
               </span>
             )}
           </div>
           <button
             onClick={() => setShowEdit(true)}
-            className="p-2 rounded-full focus:outline-none active:opacity-60 transition-opacity"
+            className="p-2 rounded-full focus:outline-none active:opacity-60"
             style={{ color: 'var(--color-text-muted)' }}
           >
             <Pencil size={15} />
@@ -321,12 +226,13 @@ function BlockCard({ routine }: BlockCardProps) {
           <button
             onClick={handleDelete}
             disabled={deleteRoutine.isPending}
-            className="p-2 rounded-full focus:outline-none active:opacity-60 transition-opacity disabled:opacity-40"
+            className="p-2 rounded-full focus:outline-none active:opacity-60 disabled:opacity-40"
             style={{ color: 'var(--color-danger)' }}
           >
             <Trash2 size={15} />
           </button>
         </div>
+
         {/* Steps */}
         <div className="p-4">
           <StepList steps={routine.steps ?? []} routineId={routine.id} />
@@ -334,7 +240,7 @@ function BlockCard({ routine }: BlockCardProps) {
       </div>
 
       {showEdit && (
-        <EditBlockModal routine={routine} onClose={() => setShowEdit(false)} />
+        <BlockModal routine={routine} onClose={() => setShowEdit(false)} />
       )}
     </>
   )
@@ -342,12 +248,7 @@ function BlockCard({ routine }: BlockCardProps) {
 
 // ── Inline group name edit ─────────────────────────────────────────────────────
 
-interface InlineNameEditProps {
-  groupId: string
-  currentName: string
-}
-
-function InlineNameEdit({ groupId, currentName }: InlineNameEditProps) {
+function InlineNameEdit({ groupId, currentName }: { groupId: string; currentName: string }) {
   const updateGroup = useUpdateRoutineGroup()
   const [editing, setEditing] = useState(false)
   const [value, setValue] = useState(currentName)
@@ -359,11 +260,6 @@ function InlineNameEdit({ groupId, currentName }: InlineNameEditProps) {
     setEditing(false)
   }
 
-  const cancel = () => {
-    setValue(currentName)
-    setEditing(false)
-  }
-
   if (editing) {
     return (
       <div className="flex items-center gap-2">
@@ -371,21 +267,14 @@ function InlineNameEdit({ groupId, currentName }: InlineNameEditProps) {
           autoFocus
           value={value}
           onChange={(e) => setValue(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') save()
-            if (e.key === 'Escape') cancel()
-          }}
-          className="text-[20px] font-bold rounded-xl px-3 py-1 focus:outline-none"
-          style={{
-            color: 'var(--color-text)',
-            backgroundColor: 'var(--color-fill)',
-            border: 'none',
-          }}
+          onKeyDown={(e) => { if (e.key === 'Enter') save(); if (e.key === 'Escape') { setValue(currentName); setEditing(false) } }}
+          className="text-[28px] font-bold rounded-xl px-3 py-1 focus:outline-none"
+          style={{ color: 'var(--color-text)', backgroundColor: 'var(--color-fill)', border: 'none' }}
         />
         <button onClick={save} className="p-1 focus:outline-none" style={{ color: 'var(--color-success)' }}>
           <Check size={18} />
         </button>
-        <button onClick={cancel} className="p-1 focus:outline-none" style={{ color: 'var(--color-text-muted)' }}>
+        <button onClick={() => { setValue(currentName); setEditing(false) }} className="p-1 focus:outline-none" style={{ color: 'var(--color-text-muted)' }}>
           <X size={18} />
         </button>
       </div>
@@ -395,8 +284,8 @@ function InlineNameEdit({ groupId, currentName }: InlineNameEditProps) {
   return (
     <button
       onClick={() => setEditing(true)}
-      className="text-[20px] font-bold text-left focus:outline-none transition-opacity active:opacity-60"
-      style={{ color: 'var(--color-text)' }}
+      className="text-[34px] font-bold tracking-tight text-left focus:outline-none active:opacity-60"
+      style={{ color: 'var(--color-text)', lineHeight: 1.1 }}
     >
       {currentName}
     </button>
@@ -414,29 +303,26 @@ export default function GroupDetailPage({ params }: PageProps) {
 
   return (
     <div className="px-4 pb-32">
-      {/* iOS-style navigation bar */}
+      {/* Nav bar */}
       <div className="flex items-center justify-between pt-14 pb-4">
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => router.back()}
-            className="flex items-center gap-1 -ml-1 focus:outline-none active:opacity-60 transition-opacity"
-            style={{ color: 'var(--color-primary)' }}
-          >
-            <ArrowLeft size={20} strokeWidth={2.5} />
-            <span className="text-[17px]">Terug</span>
-          </button>
-        </div>
+        <button
+          onClick={() => router.back()}
+          className="flex items-center gap-1 -ml-1 focus:outline-none active:opacity-60"
+          style={{ color: 'var(--color-primary)' }}
+        >
+          <ArrowLeft size={20} strokeWidth={2.5} />
+          <span className="text-[17px]">Terug</span>
+        </button>
         <Link
           href={`/routines/${params.id}/info`}
-          className="p-2 rounded-full focus:outline-none active:opacity-60 transition-opacity"
+          className="p-2 rounded-full focus:outline-none active:opacity-60"
           style={{ color: 'var(--color-primary)' }}
-          aria-label="Info sectie"
         >
           <Info size={20} />
         </Link>
       </div>
 
-      {/* Page title */}
+      {/* Large title */}
       <div className="mb-5">
         {group ? (
           <InlineNameEdit groupId={group.id} currentName={group.name} />
@@ -449,18 +335,15 @@ export default function GroupDetailPage({ params }: PageProps) {
 
       {isLoading && (
         <div className="space-y-4">
-          <div className="h-48 rounded-2xl animate-pulse" style={{ backgroundColor: 'var(--color-surface)' }} />
-          <div className="h-32 rounded-2xl animate-pulse" style={{ backgroundColor: 'var(--color-surface)' }} />
+          {[1, 2].map((i) => (
+            <div key={i} className="h-40 rounded-2xl animate-pulse" style={{ backgroundColor: 'var(--color-surface)' }} />
+          ))}
         </div>
       )}
 
       {!isLoading && group && (
         <div className="space-y-3">
-          {/* Section label */}
-          <p
-            className="text-[13px] font-semibold uppercase tracking-wide px-1"
-            style={{ color: 'var(--color-text-muted)' }}
-          >
+          <p className="text-[13px] font-semibold uppercase tracking-wide px-1" style={{ color: 'var(--color-text-muted)' }}>
             Blokken
           </p>
 
@@ -468,15 +351,10 @@ export default function GroupDetailPage({ params }: PageProps) {
             <BlockCard key={routine.id} routine={routine} />
           ))}
 
-          {/* Add block button */}
           <button
             onClick={() => setShowAddBlock(true)}
-            className="w-full py-3.5 rounded-2xl text-[15px] font-medium flex items-center justify-center gap-2 focus:outline-none active:opacity-60 transition-opacity"
-            style={{
-              border: '1.5px dashed var(--color-border)',
-              color: 'var(--color-primary)',
-              backgroundColor: 'transparent',
-            }}
+            className="w-full py-3.5 rounded-2xl text-[15px] font-medium flex items-center justify-center gap-2 focus:outline-none active:opacity-60"
+            style={{ border: '1.5px dashed var(--color-border)', color: 'var(--color-primary)', backgroundColor: 'transparent' }}
           >
             <Plus size={16} strokeWidth={2.5} />
             Blok toevoegen
@@ -485,7 +363,7 @@ export default function GroupDetailPage({ params }: PageProps) {
       )}
 
       {showAddBlock && group && (
-        <AddBlockModal groupId={group.id} onClose={() => setShowAddBlock(false)} />
+        <BlockModal groupId={group.id} onClose={() => setShowAddBlock(false)} />
       )}
     </div>
   )
