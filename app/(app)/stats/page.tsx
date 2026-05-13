@@ -3,11 +3,10 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { useStreak } from '@/lib/hooks/useStreak'
+
 import StreakDisplay from '@/components/stats/StreakDisplay'
 import WeekView from '@/components/stats/WeekView'
-import ThemeToggle from '@/components/ui/ThemeToggle'
 import { createClient } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
 import { useQuery } from '@tanstack/react-query'
 import { Package } from 'lucide-react'
 
@@ -171,23 +170,15 @@ function ProductsTab() {
 
 export default function StatsPage() {
   const { data: streak, isLoading } = useStreak()
-  const router = useRouter()
   const [activeTab, setActiveTab] = useState<'stats' | 'products'>('stats')
-
-  const handleSignOut = async () => {
-    await supabase.auth.signOut()
-    router.push('/login')
-    router.refresh()
-  }
 
   return (
     <div className="px-4 pb-32">
       {/* Large title header */}
-      <div className="flex items-end justify-between pt-14 pb-2">
+      <div className="pt-14 pb-2">
         <h1 className="text-[34px] font-bold tracking-tight" style={{ color: 'var(--color-text)', lineHeight: 1.1 }}>
           {activeTab === 'products' ? 'Producten' : 'Statistieken'}
         </h1>
-        <ThemeToggle />
       </div>
 
       {/* iOS-style segmented control */}
@@ -275,14 +266,7 @@ export default function StatsPage() {
                 )}
               </div>
 
-              {/* Sign out */}
-              <button
-                onClick={handleSignOut}
-                className="w-full py-3.5 rounded-2xl text-[15px] font-medium focus:outline-none active:opacity-60 transition-opacity mt-2"
-                style={{ color: 'var(--color-danger)', backgroundColor: 'rgba(255, 59, 48, 0.08)' }}
-              >
-                Uitloggen
-              </button>
+
             </motion.div>
           )}
         </>

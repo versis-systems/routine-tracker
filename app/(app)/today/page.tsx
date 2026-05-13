@@ -8,7 +8,6 @@ import { useCompletions, useToggleCompletion } from '@/lib/hooks/useCompletions'
 import { isStepActiveToday } from '@/lib/utils/phaseUtils'
 import WeekStrip from '@/components/dashboard/WeekStrip'
 import CalendarDayView from '@/components/dashboard/CalendarDayView'
-import ThemeToggle from '@/components/ui/ThemeToggle'
 import ImportRoutineButton from '@/components/ui/ImportRoutineButton'
 import { Routine, Step } from '@/lib/types'
 
@@ -44,11 +43,6 @@ export default function TodayPage() {
         className="flex-shrink-0"
         style={{ paddingTop: 'env(safe-area-inset-top, 44px)' }}
       >
-        {/* Title bar */}
-        <div className="flex items-center justify-end px-4 pt-2 pb-1">
-          <ThemeToggle />
-        </div>
-
         {/* Week strip */}
         <WeekStrip
           selectedDate={selectedDate}
