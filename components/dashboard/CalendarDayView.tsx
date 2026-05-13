@@ -2,7 +2,7 @@
 
 import { useRef, useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Check, ChevronDown, Info, X } from 'lucide-react'
+import { Clock, Info, X } from 'lucide-react'
 import { Routine, Step, Completion } from '@/lib/types'
 import { isStepActiveToday } from '@/lib/utils/phaseUtils'
 import StepCheckbox from './StepCheckbox'
@@ -10,17 +10,17 @@ import ProgressBar from '@/components/ui/ProgressBar'
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 
-const HOUR_HEIGHT = 64 // px per hour
-const START_HOUR = 5   // 5:00
-const END_HOUR = 24    // midnight
+const HOUR_HEIGHT = 56
+const START_HOUR = 5
+const END_HOUR = 24
 const TOTAL_HOURS = END_HOUR - START_HOUR
-const TIME_LABEL_WIDTH = 44
+const TIME_LABEL_WIDTH = 48
 
 const BLOCK_COLORS: Record<string, { bg: string; border: string; text: string }> = {
-  morning:   { bg: 'rgba(0, 122, 255, 0.12)',  border: '#007AFF', text: '#007AFF' },
-  afternoon: { bg: 'rgba(255, 149, 0, 0.12)',  border: '#FF9500', text: '#C97500' },
-  evening:   { bg: 'rgba(88, 86, 214, 0.12)',  border: '#5856D6', text: '#5856D6' },
-  free:      { bg: 'rgba(52, 199, 89, 0.12)',  border: '#34C759', text: '#248A3D' },
+  morning:   { bg: 'rgba(0, 122, 255, 0.10)',  border: '#007AFF', text: '#007AFF' },
+  afternoon: { bg: 'rgba(255, 149, 0, 0.10)',  border: '#FF9500', text: '#C97500' },
+  evening:   { bg: 'rgba(88, 86, 214, 0.10)',  border: '#5856D6', text: '#5856D6' },
+  free:      { bg: 'rgba(52, 199, 89, 0.10)',  border: '#34C759', text: '#248A3D' },
 }
 
 const DARK_BLOCK_COLORS: Record<string, { bg: string; border: string; text: string }> = {
@@ -80,29 +80,32 @@ function StepSheet({ routine, completions, date, onToggleStep, onClose }: StepSh
       style={{ backgroundColor: 'rgba(0,0,0,0.35)' }}
     >
       <motion.div
-        className="w-full max-w-lg mx-auto rounded-t-3xl overflow-hidden"
+        className="w-full max-w-lg mx-auto rounded-t-3xl overflow-hidden flex flex-col"
         initial={{ y: '100%' }}
         animate={{ y: 0 }}
         exit={{ y: '100%' }}
         transition={{ type: 'spring', damping: 32, stiffness: 380 }}
-        style={{ backgroundColor: 'var(--color-surface)', maxHeight: '80dvh' }}
+        style={{ backgroundColor: 'var(--color-surface)', maxHeight: '82dvh' }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Drag handle */}
-        <div className="flex justify-center pt-3 pb-1">
+        <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
           <div className="w-9 h-1 rounded-full" style={{ backgroundColor: 'var(--color-fill)' }} />
         </div>
 
         {/* Header */}
-        <div className="px-5 pt-2 pb-4">
+        <div className="px-5 pt-1 pb-4 flex-shrink-0">
           <div className="flex items-start justify-between gap-3">
             <div className="flex-1 min-w-0">
-              <p className="text-[13px] font-medium mb-0.5" style={{ color: colors.text }}>
-                {routine.start_time && routine.end_time
-                  ? `${formatTime(routine.start_time)} – ${formatTime(routine.end_time)}`
-                  : 'Ongepland'}
-              </p>
-              <p className="text-[20px] font-bold" style={{ color: 'var(--color-text)' }}>
+              {routine.start_time && routine.end_time && (
+                <div className="flex items-center gap-1 mb-1">
+                  <Clock size={11} style={{ color: colors.border }} />
+                  <p className="text-[12px] font-medium" style={{ color: colors.border }}>
+                    {formatTime(routine.start_time)} – {formatTime(routine.end_time)}
+                  </p>
+                </div>
+              )}
+              <p className="text-[22px] font-bold leading-tight" style={{ color: 'var(--color-text)' }}>
                 {routine.name}
               </p>
             </div>
@@ -112,7 +115,7 @@ function StepSheet({ routine, completions, date, onToggleStep, onClose }: StepSh
                   onClick={() => setNotesOpen((v) => !v)}
                   className="p-2 rounded-full focus:outline-none"
                   style={{
-                    color: notesOpen ? colors.text : 'var(--color-text-muted)',
+                    color: notesOpen ? colors.border : 'var(--color-text-muted)',
                     backgroundColor: notesOpen ? 'var(--color-fill)' : 'transparent',
                   }}
                 >
@@ -129,7 +132,6 @@ function StepSheet({ routine, completions, date, onToggleStep, onClose }: StepSh
             </div>
           </div>
 
-          {/* Progress */}
           <div className="mt-3">
             <ProgressBar value={progress} height={3} color={colors.border} />
             <p className="text-[12px] mt-1" style={{ color: 'var(--color-text-muted)' }}>
@@ -145,7 +147,7 @@ function StepSheet({ routine, completions, date, onToggleStep, onClose }: StepSh
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: 'auto', opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
-              className="overflow-hidden px-5 mb-3"
+              className="overflow-hidden px-5 mb-3 flex-shrink-0"
             >
               <div className="rounded-xl px-3.5 py-3" style={{ backgroundColor: 'var(--color-fill)' }}>
                 <p className="text-[13px] leading-relaxed whitespace-pre-line" style={{ color: 'var(--color-text)' }}>
@@ -157,10 +159,10 @@ function StepSheet({ routine, completions, date, onToggleStep, onClose }: StepSh
         </AnimatePresence>
 
         {/* Steps */}
-        <div className="overflow-y-auto" style={{ maxHeight: '50dvh' }}>
+        <div className="overflow-y-auto flex-1">
           <div
             className="mx-4 mb-6 rounded-2xl overflow-hidden"
-            style={{ backgroundColor: 'var(--color-fill-secondary)' }}
+            style={{ backgroundColor: 'var(--color-fill)' }}
           >
             {activeSteps.map((step, index) => (
               <div key={step.id}>
@@ -180,6 +182,11 @@ function StepSheet({ routine, completions, date, onToggleStep, onClose }: StepSh
                 </div>
               </div>
             ))}
+            {activeSteps.length === 0 && (
+              <p className="text-[14px] px-4 py-4" style={{ color: 'var(--color-text-muted)' }}>
+                Geen stappen voor vandaag.
+              </p>
+            )}
           </div>
         </div>
       </motion.div>
@@ -204,17 +211,27 @@ function CalendarBlock({ routine, completions, date, topPx, heightPx, onTap }: C
   const completedCount = activeSteps.filter((s) => completedIds.has(s.id)).length
   const isAllDone = activeSteps.length > 0 && completedCount === activeSteps.length
   const colors = getBlockColors(routine.time_of_day)
-  const compact = heightPx < 48
+  const clampedH = Math.max(heightPx, 28)
+  const compact = clampedH < 44
 
   return (
     <motion.button
-      className="absolute rounded-xl overflow-hidden text-left focus:outline-none w-full"
+      className="absolute rounded-xl overflow-hidden text-left focus:outline-none"
       style={{
-        top: topPx,
-        height: Math.max(heightPx, 32),
-        backgroundColor: isAllDone ? 'rgba(52,199,89,0.12)' : colors.bg,
-        borderLeft: `3px solid ${isAllDone ? '#34C759' : colors.border}`,
-        padding: compact ? '4px 8px' : '6px 10px',
+        top: topPx + 1,
+        height: clampedH - 2,
+        left: 0,
+        right: 0,
+        backgroundColor: isAllDone
+          ? 'rgba(52,199,89,0.10)'
+          : isDark()
+          ? (DARK_BLOCK_COLORS[routine.time_of_day] ?? DARK_BLOCK_COLORS.free).bg
+          : (BLOCK_COLORS[routine.time_of_day] ?? BLOCK_COLORS.free).bg,
+        borderLeft: `3.5px solid ${isAllDone ? '#34C759' : colors.border}`,
+        paddingLeft: 8,
+        paddingRight: 6,
+        paddingTop: compact ? 4 : 6,
+        paddingBottom: compact ? 4 : 6,
       }}
       whileTap={{ scale: 0.97, opacity: 0.85 }}
       onClick={onTap}
@@ -226,17 +243,15 @@ function CalendarBlock({ routine, completions, date, topPx, heightPx, onTap }: C
           color: isAllDone ? '#34C759' : colors.text,
         }}
       >
-        {isAllDone ? '✓ ' : ''}{routine.name}
+        {isAllDone && '✓ '}{routine.name}
       </p>
       {!compact && routine.start_time && routine.end_time && (
-        <p className="text-[11px] truncate mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
-          {formatTime(routine.start_time)} – {formatTime(routine.end_time)}
-        </p>
-      )}
-      {!compact && activeSteps.length > 0 && (
-        <p className="text-[11px] mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
-          {completedCount}/{activeSteps.length}
-        </p>
+        <div className="flex items-center gap-1 mt-0.5">
+          <Clock size={9} style={{ color: 'var(--color-text-muted)', flexShrink: 0 }} />
+          <p className="text-[10px] truncate" style={{ color: 'var(--color-text-muted)' }}>
+            {formatTime(routine.start_time)} – {formatTime(routine.end_time)}
+          </p>
+        </div>
       )}
     </motion.button>
   )
@@ -263,66 +278,105 @@ export default function CalendarDayView({
   const [selectedRoutine, setSelectedRoutine] = useState<(Routine & { steps: Step[] }) | null>(null)
   const isToday = date.toDateString() === new Date().toDateString()
 
-  // Scroll to current time (or 7am) on mount
   useEffect(() => {
     if (!scrollRef.current) return
     const now = new Date()
     const targetHour = isToday ? now.getHours() + now.getMinutes() / 60 : 7
-    const scrollTo = Math.max(0, (targetHour - START_HOUR - 1) * HOUR_HEIGHT)
-    scrollRef.current.scrollTop = scrollTo
+    scrollRef.current.scrollTop = Math.max(0, (targetHour - START_HOUR - 1.5) * HOUR_HEIGHT)
   }, [isToday])
 
-  const hours = Array.from({ length: TOTAL_HOURS + 1 }, (_, i) => START_HOUR + i)
+  const hours = Array.from({ length: TOTAL_HOURS }, (_, i) => START_HOUR + i)
   const totalHeight = TOTAL_HOURS * HOUR_HEIGHT
 
-  // Current time position
   const now = new Date()
   const currentDecimalHour = now.getHours() + now.getMinutes() / 60
   const currentTimePx = (currentDecimalHour - START_HOUR) * HOUR_HEIGHT
+  const currentTimeLabel = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
 
   return (
-    <div className="flex flex-col gap-0">
+    <div className="flex flex-col flex-1 overflow-hidden">
+      {/* Hele dag strip for untimed routines */}
+      {untimedRoutines.length > 0 && (
+        <div
+          className="flex-shrink-0 border-b px-4 py-2 flex items-center gap-2 flex-wrap"
+          style={{ borderColor: 'var(--color-separator)' }}
+        >
+          <span
+            className="text-[11px] font-medium flex-shrink-0"
+            style={{ width: TIME_LABEL_WIDTH - 8, color: 'var(--color-text-muted)', textAlign: 'right' }}
+          >
+            Hele dag
+          </span>
+          <div className="flex gap-2 flex-wrap flex-1">
+            {untimedRoutines.map((routine) => {
+              const colors = getBlockColors(routine.time_of_day)
+              const activeSteps = routine.steps.filter((s) => isStepActiveToday(s, date))
+              const completedIds = new Set(completions.map((c) => c.step_id))
+              const completedCount = activeSteps.filter((s) => completedIds.has(s.id)).length
+              const isAllDone = activeSteps.length > 0 && completedCount === activeSteps.length
+
+              return (
+                <motion.button
+                  key={routine.id}
+                  className="rounded-md px-2.5 py-1 text-left focus:outline-none"
+                  style={{
+                    backgroundColor: isAllDone ? 'rgba(52,199,89,0.10)' : colors.bg,
+                    borderLeft: `3px solid ${isAllDone ? '#34C759' : colors.border}`,
+                  }}
+                  whileTap={{ scale: 0.96, opacity: 0.8 }}
+                  onClick={() => setSelectedRoutine(routine)}
+                >
+                  <p
+                    className="text-[12px] font-semibold truncate max-w-[120px]"
+                    style={{ color: isAllDone ? '#34C759' : colors.text }}
+                  >
+                    {routine.name}
+                  </p>
+                </motion.button>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Scrollable timeline */}
-      <div
-        ref={scrollRef}
-        className="overflow-y-auto"
-        style={{ maxHeight: 'calc(100dvh - 260px)', minHeight: 300 }}
-      >
+      <div ref={scrollRef} className="flex-1 overflow-y-auto">
         <div className="relative" style={{ height: totalHeight }}>
           {/* Hour lines + labels */}
           {hours.map((hour) => {
             const topPx = (hour - START_HOUR) * HOUR_HEIGHT
-            const label = hour < 24 ? `${String(hour).padStart(2, '0')}:00` : '00:00'
             return (
-              <div key={hour} className="absolute left-0 right-0 flex items-start" style={{ top: topPx }}>
+              <div
+                key={hour}
+                className="absolute left-0 right-0 flex items-start pointer-events-none"
+                style={{ top: topPx }}
+              >
                 <span
-                  className="text-[11px] font-medium select-none flex-shrink-0 text-right"
+                  className="flex-shrink-0 text-right select-none"
                   style={{
                     width: TIME_LABEL_WIDTH,
                     paddingRight: 8,
+                    fontSize: 11,
+                    fontWeight: 500,
                     color: 'var(--color-text-muted)',
-                    marginTop: -7,
+                    marginTop: hour === START_HOUR ? 0 : -7,
+                    lineHeight: 1,
                   }}
                 >
-                  {label}
+                  {`${String(hour).padStart(2, '0')}:00`}
                 </span>
                 <div
                   className="flex-1"
-                  style={{ height: '0.5px', backgroundColor: 'var(--color-separator)', marginTop: 0 }}
+                  style={{ height: '0.5px', backgroundColor: 'var(--color-separator)' }}
                 />
               </div>
             )
           })}
 
-          {/* Events area */}
+          {/* Events column */}
           <div
             className="absolute"
-            style={{
-              left: TIME_LABEL_WIDTH + 4,
-              right: 4,
-              top: 0,
-              height: totalHeight,
-            }}
+            style={{ left: TIME_LABEL_WIDTH + 6, right: 6, top: 0, height: totalHeight }}
           >
             {timedRoutines.map((routine) => {
               if (!routine.start_time || !routine.end_time) return null
@@ -348,66 +402,43 @@ export default function CalendarDayView({
           {isToday && currentDecimalHour >= START_HOUR && currentDecimalHour <= END_HOUR && (
             <div
               className="absolute left-0 right-0 flex items-center pointer-events-none"
-              style={{ top: currentTimePx }}
+              style={{ top: currentTimePx - 9 }}
             >
-              <span
-                className="text-[10px] font-bold flex-shrink-0 text-right"
-                style={{ width: TIME_LABEL_WIDTH, paddingRight: 6, color: 'var(--color-danger)' }}
+              {/* Red pill with time */}
+              <div
+                className="flex-shrink-0 flex items-center justify-center rounded-full"
+                style={{
+                  width: TIME_LABEL_WIDTH,
+                  paddingRight: 4,
+                  paddingLeft: 4,
+                }}
               >
-                {String(now.getHours()).padStart(2, '0')}:{String(now.getMinutes()).padStart(2, '0')}
-              </span>
-              <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: 'var(--color-danger)' }} />
-              <div className="flex-1" style={{ height: 1.5, backgroundColor: 'var(--color-danger)' }} />
+                <span
+                  className="text-[10px] font-bold rounded-full px-1.5 py-0.5"
+                  style={{
+                    color: '#FFFFFF',
+                    backgroundColor: 'var(--color-danger)',
+                    lineHeight: 1.4,
+                  }}
+                >
+                  {currentTimeLabel}
+                </span>
+              </div>
+              {/* Red dot + line */}
+              <div className="flex items-center flex-1" style={{ marginTop: 9 }}>
+                <div
+                  className="w-2 h-2 rounded-full flex-shrink-0"
+                  style={{ backgroundColor: 'var(--color-danger)', marginLeft: 2 }}
+                />
+                <div
+                  className="flex-1"
+                  style={{ height: 1.5, backgroundColor: 'var(--color-danger)' }}
+                />
+              </div>
             </div>
           )}
         </div>
       </div>
-
-      {/* Untimed routines */}
-      {untimedRoutines.length > 0 && (
-        <div className="mt-4">
-          <p
-            className="text-[13px] font-semibold uppercase tracking-wide px-1 mb-2"
-            style={{ color: 'var(--color-text-muted)' }}
-          >
-            Ongepland
-          </p>
-          <div className="space-y-2">
-            {untimedRoutines.map((routine) => {
-              const colors = getBlockColors(routine.time_of_day)
-              const activeSteps = routine.steps.filter((s) => isStepActiveToday(s, date))
-              const completedIds = new Set(completions.map((c) => c.step_id))
-              const completedCount = activeSteps.filter((s) => completedIds.has(s.id)).length
-              const isAllDone = activeSteps.length > 0 && completedCount === activeSteps.length
-
-              return (
-                <motion.button
-                  key={routine.id}
-                  className="w-full text-left rounded-xl px-4 py-3 focus:outline-none flex items-center gap-3"
-                  style={{
-                    backgroundColor: isAllDone ? 'rgba(52,199,89,0.1)' : colors.bg,
-                    borderLeft: `3px solid ${isAllDone ? '#34C759' : colors.border}`,
-                  }}
-                  whileTap={{ scale: 0.98, opacity: 0.8 }}
-                  onClick={() => setSelectedRoutine(routine)}
-                >
-                  <div className="flex-1 min-w-0">
-                    <p
-                      className="text-[15px] font-semibold"
-                      style={{ color: isAllDone ? '#34C759' : colors.text }}
-                    >
-                      {isAllDone ? '✓ ' : ''}{routine.name}
-                    </p>
-                  </div>
-                  <span className="text-[13px] flex-shrink-0" style={{ color: 'var(--color-text-muted)' }}>
-                    {completedCount}/{activeSteps.length}
-                  </span>
-                </motion.button>
-              )
-            })}
-          </div>
-        </div>
-      )}
 
       {/* Step sheet */}
       <AnimatePresence>

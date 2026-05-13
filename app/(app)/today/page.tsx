@@ -1,20 +1,20 @@
 'use client'
 
 import { useState } from 'react'
-import { motion } from 'framer-motion'
 import { startOfDay } from 'date-fns'
+import { motion } from 'framer-motion'
 import { useRoutineGroups } from '@/lib/hooks/useRoutines'
 import { useCompletions, useToggleCompletion } from '@/lib/hooks/useCompletions'
 import { isStepActiveToday } from '@/lib/utils/phaseUtils'
-import DaySelector from '@/components/dashboard/DaySelector'
+import WeekStrip from '@/components/dashboard/WeekStrip'
 import CalendarDayView from '@/components/dashboard/CalendarDayView'
 import ThemeToggle from '@/components/ui/ThemeToggle'
-import ProgressBar from '@/components/ui/ProgressBar'
 import ImportRoutineButton from '@/components/ui/ImportRoutineButton'
 import { Routine, Step } from '@/lib/types'
 
 export default function TodayPage() {
   const [selectedDate, setSelectedDate] = useState(startOfDay(new Date()))
+  const [weekOffset, setWeekOffset] = useState(0)
   const { data: groups, isLoading } = useRoutineGroups()
   const { data: completions = [] } = useCompletions(selectedDate)
   const toggleCompletion = useToggleCompletion()
@@ -23,74 +23,57 @@ export default function TodayPage() {
     toggleCompletion.mutate({ stepId, date: selectedDate, isCompleted })
   }
 
-  // All active routines for today across all groups
-  const allRoutines = groups?.flatMap((g) => (g.routines ?? []) as (Routine & { steps: Step[] })[]) ?? []
+  const allRoutines =
+    groups?.flatMap((g) => (g.routines ?? []) as (Routine & { steps: Step[] })[]) ?? []
   const activeRoutines = allRoutines.filter((r) =>
     r.steps.some((s) => isStepActiveToday(s, selectedDate))
   )
 
-  // Split into timed (positioned in calendar) and untimed
-  const timedRoutines = activeRoutines.filter((r) => r.start_time && r.end_time)
+  const timedRoutines = activeRoutines
+    .filter((r) => r.start_time && r.end_time)
     .sort((a, b) => (a.start_time ?? '').localeCompare(b.start_time ?? ''))
   const untimedRoutines = activeRoutines.filter((r) => !r.start_time || !r.end_time)
 
-  // Progress
-  const allActiveSteps = activeRoutines.flatMap((r) =>
-    r.steps.filter((s) => isStepActiveToday(s, selectedDate))
-  )
-  const completedStepIds = new Set(completions.map((c) => c.step_id))
-  const completedCount = allActiveSteps.filter((s) => completedStepIds.has(s.id)).length
-  const totalCount = allActiveSteps.length
-  const overallProgress = totalCount > 0 ? (completedCount / totalCount) * 100 : 0
-
   return (
-    <div className="px-4 pb-32">
-      {/* Large title */}
-      <div className="flex items-end justify-between pt-14 pb-2">
-        <h1 className="text-[34px] font-bold tracking-tight" style={{ color: 'var(--color-text)', lineHeight: 1.1 }}>
-          Vandaag
-        </h1>
-        <ThemeToggle />
-      </div>
-
-      {/* Date selector */}
-      <div className="mt-3 mb-4">
-        <DaySelector selectedDate={selectedDate} onDateChange={setSelectedDate} />
-      </div>
-
-      {/* Overall progress */}
-      {totalCount > 0 && (
-        <div
-          className="mb-4 rounded-2xl px-4 py-3"
-          style={{ backgroundColor: 'var(--color-surface)', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}
-        >
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[15px] font-medium" style={{ color: 'var(--color-text)' }}>Voortgang</span>
-            <span className="text-[15px] font-semibold" style={{ color: 'var(--color-primary)' }}>
-              {completedCount}/{totalCount}
-            </span>
-          </div>
-          <ProgressBar value={overallProgress} height={4} />
-          {overallProgress === 100 && (
-            <motion.p
-              initial={{ opacity: 0, y: 4 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="text-center text-[14px] font-semibold mt-2"
-              style={{ color: 'var(--color-success)' }}
-            >
-              Alles gedaan! 🎉
-            </motion.p>
-          )}
+    <div
+      className="flex flex-col"
+      style={{ height: '100dvh', backgroundColor: 'var(--color-background)' }}
+    >
+      {/* Fixed top: safe area + header */}
+      <div
+        className="flex-shrink-0"
+        style={{ paddingTop: 'env(safe-area-inset-top, 44px)' }}
+      >
+        {/* Title bar */}
+        <div className="flex items-center justify-between px-4 pt-2 pb-1">
+          <h1
+            className="text-[28px] font-bold tracking-tight"
+            style={{ color: 'var(--color-text)', lineHeight: 1 }}
+          >
+            Vandaag
+          </h1>
+          <ThemeToggle />
         </div>
-      )}
+
+        {/* Week strip */}
+        <WeekStrip
+          selectedDate={selectedDate}
+          weekOffset={weekOffset}
+          onDateChange={setSelectedDate}
+          onWeekChange={setWeekOffset}
+        />
+
+        {/* Separator */}
+        <div style={{ height: '0.5px', backgroundColor: 'var(--color-separator)' }} />
+      </div>
 
       {/* Loading */}
       {isLoading && (
-        <div className="space-y-3">
+        <div className="flex-1 flex flex-col gap-3 px-4 pt-4">
           {[1, 2, 3].map((i) => (
             <div
               key={i}
-              className="h-20 rounded-2xl animate-pulse"
+              className="h-16 rounded-2xl animate-pulse"
               style={{ backgroundColor: 'var(--color-surface)' }}
             />
           ))}
@@ -102,7 +85,7 @@ export default function TodayPage() {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="flex flex-col items-center text-center py-16 gap-5"
+          className="flex-1 flex flex-col items-center justify-center text-center px-6 gap-5"
         >
           <p className="text-6xl">✨</p>
           <div>
@@ -117,7 +100,7 @@ export default function TodayPage() {
         </motion.div>
       )}
 
-      {/* Calendar day view */}
+      {/* Calendar */}
       {!isLoading && groups && groups.length > 0 && (
         <CalendarDayView
           timedRoutines={timedRoutines}
@@ -127,6 +110,12 @@ export default function TodayPage() {
           onToggleStep={handleToggleStep}
         />
       )}
+
+      {/* Bottom nav safe area spacer */}
+      <div
+        className="flex-shrink-0"
+        style={{ height: 'calc(env(safe-area-inset-bottom, 0px) + 70px)' }}
+      />
     </div>
   )
 }
