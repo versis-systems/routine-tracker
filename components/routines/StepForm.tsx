@@ -29,6 +29,9 @@ export default function StepForm({ routineId, step, sortOrder = 0, onClose }: St
 
   const [name, setName] = useState(step?.name || '')
   const [note, setNote] = useState(step?.note || '')
+  const [instructions, setInstructions] = useState(step?.instructions || '')
+  const [productName, setProductName] = useState(step?.product_name || '')
+  const [productBrand, setProductBrand] = useState(step?.product_brand || '')
   const [repeatRule, setRepeatRule] = useState<RepeatRule>(step?.repeat_rule || 'daily')
   const [repeatDays, setRepeatDays] = useState<number[]>(step?.repeat_days || [])
   const [repeatCount, setRepeatCount] = useState(step?.repeat_count || 1)
@@ -53,6 +56,9 @@ export default function StepForm({ routineId, step, sortOrder = 0, onClose }: St
       routine_id: routineId,
       name,
       note: note || null,
+      instructions: instructions || null,
+      product_name: productName || null,
+      product_brand: productBrand || null,
       repeat_rule: repeatRule,
       repeat_days: repeatRule === 'specific_days' ? repeatDays : [],
       repeat_count: repeatRule === 'x_per_week' ? repeatCount : 1,
@@ -116,6 +122,45 @@ export default function StepForm({ routineId, step, sortOrder = 0, onClose }: St
               value={note}
               onChange={(e) => setNote(e.target.value)}
               placeholder="Bijv. op droge huid aanbrengen"
+              className="w-full bg-surface-elevated border border-border rounded-xl px-4 py-2.5 text-sm text-text placeholder:text-text-muted focus:outline-none focus:border-primary"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-text-muted mb-1.5 uppercase tracking-wide">
+              Instructies
+            </label>
+            <textarea
+              value={instructions}
+              onChange={(e) => setInstructions(e.target.value)}
+              placeholder="Bijv. Breng een kleine hoeveelheid aan op droge huid, vermijd het ooggebied. Wacht 1 minuut voor de volgende stap."
+              rows={3}
+              className="w-full bg-surface-elevated border border-border rounded-xl px-4 py-2.5 text-sm text-text placeholder:text-text-muted focus:outline-none focus:border-primary resize-none"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-text-muted mb-1.5 uppercase tracking-wide">
+              Productnaam
+            </label>
+            <input
+              type="text"
+              value={productName}
+              onChange={(e) => setProductName(e.target.value)}
+              placeholder="Bijv. Retinol 0.5% in Squalane"
+              className="w-full bg-surface-elevated border border-border rounded-xl px-4 py-2.5 text-sm text-text placeholder:text-text-muted focus:outline-none focus:border-primary"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-text-muted mb-1.5 uppercase tracking-wide">
+              Merk
+            </label>
+            <input
+              type="text"
+              value={productBrand}
+              onChange={(e) => setProductBrand(e.target.value)}
+              placeholder="Bijv. The Ordinary"
               className="w-full bg-surface-elevated border border-border rounded-xl px-4 py-2.5 text-sm text-text placeholder:text-text-muted focus:outline-none focus:border-primary"
             />
           </div>

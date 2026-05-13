@@ -26,6 +26,7 @@ export default function RoutineForm({ routine, onSuccess }: RoutineFormProps) {
 
   const [name, setName] = useState(routine?.name || '')
   const [description, setDescription] = useState(routine?.description || '')
+  const [notes, setNotes] = useState(routine?.notes || '')
   const [timeOfDay, setTimeOfDay] = useState<TimeOfDay>(routine?.time_of_day || 'morning')
   const [isActive, setIsActive] = useState(routine?.is_active !== false)
 
@@ -39,6 +40,7 @@ export default function RoutineForm({ routine, onSuccess }: RoutineFormProps) {
         id: routine.id,
         name,
         description: description || null,
+        notes: notes || null,
         time_of_day: timeOfDay,
         is_active: isActive,
       })
@@ -46,6 +48,7 @@ export default function RoutineForm({ routine, onSuccess }: RoutineFormProps) {
       await createRoutine.mutateAsync({
         name,
         description: description || null,
+        notes: notes || null,
         time_of_day: timeOfDay,
         is_active: isActive,
         sort_order: 0,
@@ -89,6 +92,19 @@ export default function RoutineForm({ routine, onSuccess }: RoutineFormProps) {
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Optionele beschrijving..."
           rows={3}
+          className="w-full bg-surface-elevated border border-border rounded-xl px-4 py-3 text-text placeholder:text-text-muted focus:outline-none focus:border-primary transition-colors resize-none"
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-text mb-1.5">
+          Belangrijke regels / notities
+        </label>
+        <textarea
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          placeholder="Bijv. Retinol nooit combineren met vitamine C..."
+          rows={4}
           className="w-full bg-surface-elevated border border-border rounded-xl px-4 py-3 text-text placeholder:text-text-muted focus:outline-none focus:border-primary transition-colors resize-none"
         />
       </div>

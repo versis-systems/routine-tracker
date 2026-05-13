@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ChevronDown } from 'lucide-react'
+import { ChevronDown, Info } from 'lucide-react'
 import { Routine, Step, Completion } from '@/lib/types'
 import { isStepActiveToday } from '@/lib/utils/phaseUtils'
 import StepCheckbox from './StepCheckbox'
@@ -29,6 +29,7 @@ export default function RoutineCard({
   onToggleStep,
 }: RoutineCardProps) {
   const [isExpanded, setIsExpanded] = useState(true)
+  const [notesOpen, setNotesOpen] = useState(false)
 
   const activeSteps = routine.steps.filter((step) => isStepActiveToday(step, date))
   const completedStepIds = new Set(completions.map((c) => c.step_id))
@@ -49,11 +50,11 @@ export default function RoutineCard({
       }`}
     >
       {/* Header */}
-      <button
-        onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center gap-3 p-4 text-left"
-      >
-        <div className="flex-1 min-w-0">
+      <div className="w-full flex items-center gap-3 p-4">
+        <button
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="flex-1 min-w-0 text-left"
+        >
           <div className="flex items-center gap-2 mb-2">
             <span className="text-xs font-medium text-text-muted">
               {timeOfDayLabels[routine.time_of_day] || routine.time_of_day}
@@ -75,14 +76,48 @@ export default function RoutineCard({
           <p className="text-xs text-text-muted mt-1">
             {completedCount}/{totalCount} stappen
           </p>
+        </button>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          {routine.notes && (
+            <button
+              onClick={() => setNotesOpen((prev) => !prev)}
+              className={`text-text-muted hover:text-primary transition-colors ${notesOpen ? 'text-primary' : ''}`}
+              aria-label="Toon notities"
+            >
+              <Info size={18} />
+            </button>
+          )}
+          <button
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="text-text-muted"
+            aria-label={isExpanded ? 'Inklappen' : 'Uitklappen'}
+          >
+            <ChevronDown
+              size={18}
+              className={`transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
+            />
+          </button>
         </div>
-        <ChevronDown
-          size={18}
-          className={`text-text-muted flex-shrink-0 transition-transform duration-200 ${
-            isExpanded ? 'rotate-180' : ''
-          }`}
-        />
-      </button>
+      </div>
+
+      {/* Notes panel */}
+      <AnimatePresence>
+        {notesOpen && routine.notes && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2, ease: 'easeInOut' }}
+            className="overflow-hidden"
+          >
+            <div className="mx-4 mb-3 bg-primary/5 border border-primary/20 rounded-xl px-3 py-2.5">
+              <p className="text-xs text-text leading-relaxed whitespace-pre-line">
+                {routine.notes}
+              </p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Steps */}
       <AnimatePresence>

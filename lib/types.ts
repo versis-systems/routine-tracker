@@ -33,6 +33,7 @@ export interface Routine {
   time_of_day: TimeOfDay
   is_active: boolean
   sort_order: number
+  notes: string | null
   created_at: string
   updated_at: string
   steps?: Step[]
@@ -51,6 +52,9 @@ export interface Step {
   phase_enabled: boolean
   phase_start_date: string | null
   phase_config: PhaseConfig | null
+  instructions: string | null
+  product_name: string | null
+  product_brand: string | null
   created_at: string
 }
 

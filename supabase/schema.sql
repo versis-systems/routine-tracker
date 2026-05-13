@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS public.routines (
   time_of_day text CHECK (time_of_day IN ('morning', 'afternoon', 'evening', 'free')) DEFAULT 'morning',
   is_active boolean DEFAULT true,
   sort_order integer DEFAULT 0,
+  notes text,
   created_at timestamptz DEFAULT now(),
   updated_at timestamptz DEFAULT now()
 );
@@ -30,6 +31,9 @@ CREATE TABLE IF NOT EXISTS public.steps (
   phase_enabled boolean DEFAULT false,
   phase_start_date date,
   phase_config jsonb,
+  instructions text,
+  product_name text,
+  product_brand text,
   created_at timestamptz DEFAULT now()
 );
 
