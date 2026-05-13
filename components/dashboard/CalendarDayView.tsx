@@ -85,7 +85,7 @@ function StepSheet({ routine, completions, date, onToggleStep, onClose }: StepSh
         animate={{ y: 0 }}
         exit={{ y: '100%' }}
         transition={{ type: 'spring', damping: 32, stiffness: 380 }}
-        style={{ backgroundColor: 'var(--color-surface)', maxHeight: '82dvh' }}
+        style={{ backgroundColor: 'var(--color-surface)', maxHeight: '92dvh' }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Drag handle */}
