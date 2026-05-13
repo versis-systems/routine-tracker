@@ -102,7 +102,7 @@ export default function TodayPage() {
       {/* Bottom nav safe area spacer */}
       <div
         className="flex-shrink-0"
-        style={{ height: 'calc(env(safe-area-inset-bottom, 0px) + 70px)' }}
+        style={{ height: 'calc(env(safe-area-inset-bottom, 16px) + 74px)' }}
       />
     </div>
   )

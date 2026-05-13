@@ -27,8 +27,8 @@ export default function BottomNav() {
       <div
         className="flex items-center justify-around max-w-lg mx-auto"
         style={{
-          paddingBottom: 'env(safe-area-inset-bottom, 8px)',
-          paddingTop: 8,
+          paddingBottom: 'calc(env(safe-area-inset-bottom, 16px) + 4px)',
+          paddingTop: 10,
           paddingLeft: 8,
           paddingRight: 8,
         }}
